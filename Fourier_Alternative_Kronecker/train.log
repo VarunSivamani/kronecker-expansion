@@ -1,0 +1,194 @@
+device: cuda
+Pulling english Wikipedia (20231101.en)...
+Resolving data files: 100%|██████████████████████████████████████████████████████████████████████| 41/41 [00:00<00:00, 8479.19it/s]
+  3000 articles, sample: 'Anarchism is a political philosophy and movement that is skeptical of all justif'
+Pulling hindi Wikipedia (20231101.hi)...
+  2974 articles, sample: 'हम होंगे कामयाब ( का गिरिजा कुमार माथुर द्वारा किया गया हिंदी भावानुवाद) एक प्रत'
+Pulling kannada Wikipedia (20231101.kn)...
+  2128 articles, sample: 'ಶಿವಮೊಗ್ಗ ಭಾರತ ದೇಶದ ಕರ್ನಾಟಕ ರಾಜ್ಯದ ಒಂದು ನಗರ (ಸಂಪರ್ಕ : ೧೩.೫೬ ಉ /೭೫.೩೮ ಪೂ). ಇದು ಕರ್'
+Pulling tamil Wikipedia (20231101.ta)...
+  2991 articles, sample: 'கட்டிடக்கலை என்பது கட்டிடங்கள் மற்றும் அதன் உடல் கட்டமைப்புகளை வடிவமைத்தல், செயல'
+Pulling telugu Wikipedia (20231101.te)...
+  2998 articles, sample: 'గుంటూరు జిల్లా, ఆంధ్రప్రదేశ్ లోని కోస్తా ప్రాంతంలో ఒక జిల్లా. దీని ముఖ్యపట్టణం గ'
+[00:00:00] Pre-processing sequences       █████████████████████████████████████████████████████████████████████ 0        /        0[00:00:00] Tokenize words                 █████████████████████████████████████████████████████████████████████ 234206   /   234206
+[00:00:01] Count pairs                    █████████████████████████████████████████████████████████████████████ 234206   /   234206
+[00:00:09] Compute merges                 █████████████████████████████████████████████████████████████████████ 13560    /    13560
+
+Shared multilingual vocab size: 16000
+
+=== Per-language fertility (shared vocab, real text) ===
+  english    bytes/char=1.00  tokens/char=0.290  chars/token=3.44
+  hindi      bytes/char=2.53  tokens/char=0.308  chars/token=3.25
+  kannada    bytes/char=2.65  tokens/char=0.311  chars/token=3.22
+  tamil      bytes/char=2.64  tokens/char=0.267  chars/token=3.74
+  telugu     bytes/char=2.57  tokens/char=0.274  chars/token=3.65
+
+=== Per-language collision report (pos_dim=32, shared vocab) ===
+  english    distinct_tokens=4051   longer_than_32B=0.00%  colliding=0.00%
+  hindi      distinct_tokens=5398   longer_than_32B=0.15%  colliding=0.00%
+  kannada    distinct_tokens=4146   longer_than_32B=0.70%  colliding=0.05%
+  tamil      distinct_tokens=6066   longer_than_32B=1.10%  colliding=0.40%
+  telugu     distinct_tokens=4441   longer_than_32B=1.06%  colliding=0.23%
+
+--> Compare this table to the fertility table above: languages with
+    higher bytes/char should show a higher % colliding, if the 32-byte
+    wall is really a script-fertility effect and not noise.
+
+Shared train examples: 14691
+  val examples [english]: 341
+  val examples [hindi]: 362
+  val examples [kannada]: 278
+  val examples [tamil]: 304
+  val examples [telugu]: 338
+
+=== Training with Kronecker codec (5-language shared corpus) ===
+[kronecker] epoch 0 step 100 train_loss 8.4057
+[kronecker] epoch 0 step 200 train_loss 8.4453
+[kronecker] epoch 0 step 300 train_loss 8.2965
+[kronecker] epoch 0 step 400 train_loss 8.2486
+[kronecker] epoch 0 val_ppl per language: english=1855.3  hindi=2316.3  kannada=4409.7  tamil=4297.8  telugu=2911.8
+[kronecker] epoch 1 step 500 train_loss 7.9101
+[kronecker] epoch 1 step 600 train_loss 7.5001
+[kronecker] epoch 1 step 700 train_loss 7.5339
+[kronecker] epoch 1 step 800 train_loss 7.0336
+[kronecker] epoch 1 step 900 train_loss 6.8722
+[kronecker] epoch 1 val_ppl per language: english=921.5  hindi=809.2  kannada=1284.6  tamil=1421.5  telugu=670.0
+[kronecker] epoch 2 step 1000 train_loss 6.7760
+[kronecker] epoch 2 step 1100 train_loss 6.5290
+[kronecker] epoch 2 step 1200 train_loss 6.5919
+[kronecker] epoch 2 step 1300 train_loss 6.5835
+[kronecker] epoch 2 val_ppl per language: english=690.1  hindi=606.2  kannada=840.8  tamil=942.7  telugu=364.4
+[kronecker] model size: codec=1,048,576 params (26.8% of 3,906,304 total), vs. dense embedding equivalent=2,048,000 params (51.20% of dense)
+
+=== Training with Fourier codec (5-language shared corpus) ===
+[fourier] epoch 0 step 100 train_loss 8.4067
+[fourier] epoch 0 step 200 train_loss 8.3839
+[fourier] epoch 0 step 300 train_loss 7.9175
+[fourier] epoch 0 step 400 train_loss 7.6796
+[fourier] epoch 0 val_ppl per language: english=1149.8  hindi=1225.2  kannada=3459.0  tamil=3284.4  telugu=2162.8
+[fourier] epoch 1 step 500 train_loss 7.6131
+[fourier] epoch 1 step 600 train_loss 7.2078
+[fourier] epoch 1 step 700 train_loss 7.3295
+[fourier] epoch 1 step 800 train_loss 6.8700
+[fourier] epoch 1 step 900 train_loss 6.7817
+[fourier] epoch 1 val_ppl per language: english=874.9  hindi=815.7  kannada=1064.5  tamil=1279.2  telugu=617.0
+[fourier] epoch 2 step 1000 train_loss 6.7133
+[fourier] epoch 2 step 1100 train_loss 6.5022
+[fourier] epoch 2 step 1200 train_loss 6.5783
+[fourier] epoch 2 step 1300 train_loss 6.5860
+[fourier] epoch 2 val_ppl per language: english=694.9  hindi=684.7  kannada=828.2  tamil=984.0  telugu=400.1
+[fourier] model size: codec=32,768 params (1.1% of 2,890,496 total), vs. dense embedding equivalent=2,048,000 params (1.60% of dense)
+
+=== Training with dense nn.Embedding codec (baseline, 5-language shared corpus) ===
+[dense_embedding] epoch 0 step 100 train_loss 8.4033
+[dense_embedding] epoch 0 step 200 train_loss 8.3114
+[dense_embedding] epoch 0 step 300 train_loss 7.6704
+[dense_embedding] epoch 0 step 400 train_loss 7.4153
+[dense_embedding] epoch 0 val_ppl per language: english=1020.4  hindi=1021.1  kannada=2638.5  tamil=2418.2  telugu=1114.3
+[dense_embedding] epoch 1 step 500 train_loss 7.2820
+[dense_embedding] epoch 1 step 600 train_loss 6.7972
+[dense_embedding] epoch 1 step 700 train_loss 6.9754
+[dense_embedding] epoch 1 step 800 train_loss 6.5827
+[dense_embedding] epoch 1 step 900 train_loss 6.4949
+[dense_embedding] epoch 1 val_ppl per language: english=695.4  hindi=619.2  kannada=980.2  tamil=1120.4  telugu=342.3
+[dense_embedding] epoch 2 step 1000 train_loss 6.4387
+[dense_embedding] epoch 2 step 1100 train_loss 6.2025
+[dense_embedding] epoch 2 step 1200 train_loss 6.2927
+[dense_embedding] epoch 2 step 1300 train_loss 6.3085
+[dense_embedding] epoch 2 val_ppl per language: english=542.9  hindi=461.1  kannada=753.5  tamil=872.0  telugu=238.6
+[dense_embedding] model size: codec=2,048,000 params (41.7% of 4,905,728 total), vs. dense embedding equivalent=2,048,000 params (100.00% of dense)
+
+====================================================================================================
+COMPARATIVE SUMMARY: fertility, collisions, and LM perplexity by language
+====================================================================================================
+Language  bytes/char  %>32B     %colliding  Kron PPL    Fourier PPL   PPL delta
+----------------------------------------------------------------------------------
+english   1.00        0.00      0.00        690.11      694.91        -4.81
+hindi     2.53        0.15      0.00        606.18      684.73        -78.54
+kannada   2.65        0.70      0.05        840.79      828.16        +12.63
+tamil     2.64        1.10      0.40        942.70      984.00        -41.30
+telugu    2.57        1.06      0.23        364.38      400.12        -35.74
+
+A positive PPL delta means Fourier achieved LOWER (better) perplexity
+than Kronecker on that language's held-out text. If the Fourier codec
+is doing what the design predicts, this delta should be largest for
+the highest-bytes/char, highest-%-colliding languages, and smallest
+(near zero, possibly slightly negative) for English.
+
+====================================================================================================
+MODEL SIZE COMPARISON: codec params, share of total model, vs. dense embedding
+====================================================================================================
+Codec           Codec params    % of total model  Total model params  vs. dense embedding
+------------------------------------------------------------------------------------------
+kronecker       1,048,576       26.84             3,906,304           51.2% of dense
+fourier         32,768          1.13              2,890,496           1.6% of dense
+dense_embedding 2,048,000       41.75             4,905,728           100.0% of dense
+
+At this vocab size (16000) and d_model (128), a dense
+nn.Embedding table alone would cost 2,048,000 parameters and ~32.8 MB of AdamW training
+state (Session 7 Section 3's 16-bytes-per-parameter accounting: bf16
+weight+grad, fp32 master + 2 optimizer moments). Both Kronecker and Fourier
+replace that with a MUCH smaller structured codec -- this table shows exactly
+how much smaller, and what fraction of the FULL trained model that codec ends
+up being (not just its size in isolation, which is what codec_projection_params
+reports above).
+
+Wrote real_data_results_5lang.json
+
+====================================================================================================
+HYPERPARAMETER SWEEP -- Kronecker pos_dim in [16, 32, 48, 64, 96], 2 epochs each
+====================================================================================================
+
+--- Kronecker pos_dim=16 ---
+  projection_params=524288     avg_val_ppl=1028.43  avg_pct_colliding=4.72%
+
+--- Kronecker pos_dim=32 ---
+  projection_params=1048576    avg_val_ppl=1004.03  avg_pct_colliding=0.13%
+
+--- Kronecker pos_dim=48 ---
+  projection_params=1572864    avg_val_ppl=1000.98  avg_pct_colliding=0.01%
+
+--- Kronecker pos_dim=64 ---
+  projection_params=2097152    avg_val_ppl=998.07  avg_pct_colliding=0.00%
+
+--- Kronecker pos_dim=96 ---
+  projection_params=3145728    avg_val_ppl=1002.40  avg_pct_colliding=0.00%
+
+====================================================================================================
+HYPERPARAMETER SWEEP -- Fourier num_freqs in [32, 64, 128, 256], 2 epochs each
+====================================================================================================
+
+--- Fourier num_freqs=32 ---
+  projection_params=8192       avg_val_ppl=927.33
+
+--- Fourier num_freqs=64 ---
+  projection_params=16384      avg_val_ppl=962.97
+
+--- Fourier num_freqs=128 ---
+  projection_params=32768      avg_val_ppl=987.82
+
+--- Fourier num_freqs=256 ---
+  projection_params=65536      avg_val_ppl=913.08
+
+====================================================================================================
+SWEEP SUMMARY -- Kronecker: pos_dim vs. params vs. real collision rate vs. PPL
+====================================================================================================
+pos_dim   proj_params   avg %colliding    avg val_ppl
+--------------------------------------------------------
+16        524288        4.72              1028.43
+32        1048576       0.13              1004.03
+48        1572864       0.01              1000.98
+64        2097152       0.00              998.07
+96        3145728       0.00              1002.40
+
+====================================================================================================
+SWEEP SUMMARY -- Fourier: num_freqs vs. code_dim vs. params vs. PPL
+====================================================================================================
+num_freqs   code_dim    proj_params   avg val_ppl
+----------------------------------------------------
+32          64          8192          927.33
+64          128         16384         962.97
+128         256         32768         987.82
+256         512         65536         913.08
+
+Wrote hyperparam_sweep_results.json

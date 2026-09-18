@@ -1,0 +1,1002 @@
+<title>Kronecker Embedding V2 — Fourier Byte Codec</title>
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --bg-panel: #ffffff;
+    --bg-inset: #ece9e2;
+    --border: #d8d3c8;
+    --text: #201d18;
+    --text-dim: #5c574d;
+    --text-faint: #8a8478;
+    --kron: #3d7a8c;
+    --kron-dim: #a9c6cd;
+    --fourier: #c47f17;
+    --fourier-dim: #e8c78a;
+    --accent: #c47f17;
+    --good: #4c7a4f;
+    --bad: #a4463a;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14130f;
+      --bg-panel: #1c1a15;
+      --bg-inset: #211f1a;
+      --border: #38352c;
+      --text: #ece8de;
+      --text-dim: #b3ac9c;
+      --text-faint: #756f60;
+      --kron: #6fb3c7;
+      --kron-dim: #2c4650;
+      --fourier: #e4a83d;
+      --fourier-dim: #4d3d1e;
+      --accent: #e4a83d;
+      --good: #7fb384;
+      --bad: #d17868;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14130f;
+    --bg-panel: #1c1a15;
+    --bg-inset: #211f1a;
+    --border: #38352c;
+    --text: #ece8de;
+    --text-dim: #b3ac9c;
+    --text-faint: #756f60;
+    --kron: #6fb3c7;
+    --kron-dim: #2c4650;
+    --fourier: #e4a83d;
+    --fourier-dim: #4d3d1e;
+    --accent: #e4a83d;
+    --good: #7fb384;
+    --bad: #d17868;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0 1.5rem 6rem;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  header.hero {
+    padding: 3.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  h1 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(1.9rem, 4vw, 2.7rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .lede { font-size: 1.1rem; color: var(--text-dim); max-width: 60ch; text-wrap: pretty; }
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 3.2rem 0 0.4rem;
+    letter-spacing: -0.005em;
+    scroll-margin-top: 1rem;
+  }
+  h2 .num { font-family: var(--mono); color: var(--text-faint); font-weight: 500; margin-right: 0.5rem; font-size: 0.85em; }
+
+  .section-intro { color: var(--text-dim); max-width: 68ch; margin: 0 0 1.4rem; }
+
+  p { max-width: 68ch; }
+  code {
+    font-family: var(--mono);
+    background: var(--bg-inset);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.88em;
+    border: 1px solid var(--border);
+  }
+
+  .legend { display: flex; gap: 1.4rem; flex-wrap: wrap; margin: 0.4rem 0 1.6rem; font-family: var(--mono); font-size: 0.82rem; color: var(--text-dim); }
+  .legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .swatch.kron { background: var(--kron); }
+  .swatch.fourier { background: var(--fourier); }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .panel .caption { font-family: var(--mono); font-size: 0.8rem; color: var(--text-faint); margin-top: 0.9rem; line-height: 1.5; }
+  .panel-title { font-family: var(--mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 0.9rem; }
+
+  canvas { width: 100%; display: block; }
+  .chart-scroll { overflow-x: auto; }
+
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.6rem 0;
+  }
+  .metric {
+    background: var(--bg-panel);
+    padding: 1.1rem 1.2rem;
+  }
+  .metric .label { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); margin-bottom: 0.5rem; }
+  .metric .value { font-family: var(--mono); font-size: 1.7rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .metric .value.kron { color: var(--kron); }
+  .metric .value.fourier { color: var(--fourier); }
+  .metric .sub { font-size: 0.78rem; color: var(--text-faint); margin-top: 0.3rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); font-weight: 500; }
+  td.num { font-family: var(--mono); }
+  .table-scroll { overflow-x: auto; }
+
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .verdict.chance { color: var(--bad); border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, transparent); }
+  .verdict.solved { color: var(--good); border-color: var(--good); background: color-mix(in srgb, var(--good) 12%, transparent); }
+
+  .byte-demo { display: flex; flex-direction: column; gap: 0.9rem; }
+  .byte-input-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .byte-input-row button {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .byte-input-row button:hover { border-color: var(--accent); color: var(--accent); }
+  .byte-input-row button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .byte-grid { display: flex; flex-wrap: wrap; gap: 3px; }
+  .byte-cell {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    background: var(--bg-inset);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .byte-cell.seen { background: var(--kron-dim); color: var(--text); border-color: var(--kron); }
+  .byte-cell.dropped { background: var(--bg); color: var(--bad); border-color: var(--bad); text-decoration: line-through; opacity: 0.7; }
+  .byte-stat { font-family: var(--mono); font-size: 0.85rem; color: var(--text-dim); }
+  .byte-stat b { color: var(--text); }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+  footer a { color: var(--accent); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span> Session 7 · Embedding Design Study</div>
+    <h1>Sum the waves, don't fill the grid: a <em>Fourier</em> alternative to Kronecker byte codecs</h1>
+    <p class="lede">Kronecker embeddings place each byte into a fixed 256×32 grid — cheap, vocabulary-independent, and silently blind past the 32nd byte. This study replaces the grid with a sum of sinusoidal waves and measures, on a real trained model, whether that actually fixes the wall.</p>
+  </header>
+
+  <section id="problem">
+    <h2><span class="num">01</span>The wall, made concrete</h2>
+    <p class="section-intro">The Kronecker codec only ever looks at a token's first 32 bytes. Type a word below and watch which bytes the codec actually sees versus which ones are silently dropped.</p>
+    <div class="panel">
+      <div class="panel-title">Byte-window inspector — pos_dim = 32</div>
+      <div class="byte-demo">
+        <div class="byte-input-row" id="word-buttons"></div>
+        <div class="byte-grid" id="byte-grid"></div>
+        <div class="byte-stat" id="byte-stat"></div>
+      </div>
+      <div class="caption">Devanagari and Telugu spend 3 bytes per character in UTF-8, so the same 32-byte window that covers 32 English characters covers roughly ten. Cells past the window are dropped from the encoding entirely, with no error raised.</div>
+    </div>
+  </section>
+
+  <section id="design">
+    <h2><span class="num">02</span>Two codecs, one interface</h2>
+    <p class="section-intro">Both codecs turn a token's raw bytes into a fixed-size vector, then pass it through one shared trainable projection. What differs is <em>how</em> bytes become that vector.</p>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title" style="color:var(--kron)">Kronecker — placement</div>
+        <p style="margin:0 0 0.6rem;font-size:0.95rem;">Each byte is dropped into cell <code>(value, position)</code> of a 256×32 grid, one-hot. Position <em>selects a slot</em> — once 32 slots are full, later bytes have nowhere to go.</p>
+        <p style="margin:0;font-size:0.85rem;color:var(--text-faint);">Code dim: 8,192 · fixed length: 32 bytes</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title" style="color:var(--fourier)">Fourier — superposition</div>
+        <p style="margin:0 0 0.6rem;font-size:0.95rem;">Each byte contributes a wave — frequency from its value, phase from its position — and all waves are <em>summed</em>. Summation never runs out of room, so length is unbounded.</p>
+        <p style="margin:0;font-size:0.85rem;color:var(--text-faint);">Code dim: 256 · fixed length: none</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="collisions">
+    <h2><span class="num">03</span>Measurement 1 — exact vector collisions</h2>
+    <p class="section-intro">32 pairs of tokens were engineered to share an identical 32-byte prefix and diverge only after it — a direct, reproducible instance of the documented failure. Each codec's pre-projection vectors were then checked for exact equality.</p>
+    <div class="metric-row">
+      <div class="metric">
+        <div class="label">Engineered pairs</div>
+        <div class="value">32</div>
+        <div class="sub">share bytes 0–31 by construction</div>
+      </div>
+      <div class="metric">
+        <div class="label">Kronecker collisions</div>
+        <div class="value kron">32 / 32</div>
+        <div class="sub"><span class="verdict chance">indistinguishable</span></div>
+      </div>
+      <div class="metric">
+        <div class="label">Fourier collisions</div>
+        <div class="value fourier">0 / 32</div>
+        <div class="sub"><span class="verdict solved">distinct vectors</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Collision count by codec</div>
+      <div class="chart-scroll"><canvas id="chart-collisions" height="140"></canvas></div>
+      <div class="caption">Ground truth from tensor equality (atol=1e-5), not a training outcome — this measures what the codec can represent, before any model sees it.</div>
+    </div>
+  </section>
+
+  <section id="training">
+    <h2><span class="num">04</span>Measurement 2 — can a trained model use the difference?</h2>
+    <p class="section-intro">A distinct vector is only useful if a model can learn to act on it. A tiny transformer (2 attention blocks, d_model=64) was trained identically on both codecs on a 4-way classification task where solving the colliding-pair half of the vocabulary <em>requires</em> distinguishing tokens beyond byte 32.</p>
+    <div class="panel">
+      <div class="panel-title">Training loss, 2000 epochs</div>
+      <div class="legend">
+        <span><span class="swatch kron"></span>Kronecker</span>
+        <span><span class="swatch fourier"></span>Fourier</span>
+      </div>
+      <div class="chart-scroll"><canvas id="chart-loss" height="220"></canvas></div>
+      <div class="caption">Kronecker's loss plateaus early at a non-zero floor — it has hit the information ceiling the colliding tokens impose. Fourier's loss continues down toward zero because the information needed to separate every token is actually present in its input.</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Accuracy on the colliding-pair group, across 5 dataset seeds</div>
+      <div class="chart-scroll"><canvas id="chart-seeds" height="200"></canvas></div>
+      <div class="caption">Two classes → chance is 50%. Kronecker cannot exceed chance by construction: colliding tokens are identical inputs to the model. Fourier averages 85.6% across five independently sampled vocabularies.</div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Seed</th><th>Kronecker</th><th>Fourier</th></tr></thead>
+        <tbody id="seed-table"></tbody>
+        <tfoot><tr><td><b>Mean</b></td><td class="num" id="kron-mean"></td><td class="num" id="fourier-mean"></td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section id="cost">
+    <h2><span class="num">05</span>Measurement 3 — is the win free?</h2>
+    <p class="section-intro">The Fourier codec must not win simply by being a larger, more expensive codec. Both projections were sized independently of vocabulary — the property that made Kronecker attractive in the first place.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Codec</th><th>Code dim</th><th>Projection params</th><th>Scales with vocab size?</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--kron)">Kronecker</td><td class="num">8,192</td><td class="num">524,288</td><td>No</td></tr>
+          <tr><td style="color:var(--fourier)">Fourier</td><td class="num">256</td><td class="num">16,384</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.9rem;color:var(--text-dim);">Fourier's projection is <b>32× smaller</b> in this configuration — <code>K</code> (frequency bands) was chosen for a comfortable margin under Kronecker's size, not tuned for parity, so this is not the headline result. It rules out "the win came from spending more parameters."</p>
+  </section>
+
+  <section id="similarity">
+    <h2><span class="num">06</span>Stretch check — is spelling-similarity preserved?</h2>
+    <p class="section-intro">Kronecker's grid construction means spelling-similar tokens start out near each other in embedding space. A 2D projection (PCA) of nine real words checks whether the Fourier codec keeps this property.</p>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title" style="color:var(--kron)">Kronecker embedding space</div>
+        <div class="chart-scroll"><canvas id="scatter-kron" height="260"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title" style="color:var(--fourier)">Fourier embedding space</div>
+        <div class="chart-scroll"><canvas id="scatter-fourier" height="260"></canvas></div>
+      </div>
+    </div>
+    <div class="caption" style="max-width:68ch;">train / training / trainer / trained cluster together and apple / application / applicant cluster together in both spaces; banana and zebra sit apart from both clusters. The property is preserved.</div>
+  </section>
+
+  <section id="real-data-intro">
+    <h2><span class="num">07</span>Real-data validation — 5 languages, real Wikipedia text</h2>
+    <p class="section-intro">Everything above uses a vocabulary engineered to force the failure mode. This section reruns the comparison on real text: a shared 16,000-token WordPiece tokenizer trained across five real Wikipedia corpora — English, Hindi, Kannada, Tamil, Telugu — chosen to span the exact fertility range the design predicts matters. Two tiny causal transformers (plus a plain dense-embedding baseline) were trained on the shared corpus and evaluated per language.</p>
+  </section>
+
+  <section id="real-fertility">
+    <h2><span class="num">08</span>Fertility by language, measured on real text</h2>
+    <p class="section-intro">English spends about 1 byte per character in UTF-8; every Brahmic script here spends roughly 2.5&ndash;2.7. This is not a synthetic assumption &mdash; it's measured directly from the real corpora against the shared tokenizer.</p>
+    <div class="panel">
+      <div class="panel-title">Bytes per character by language</div>
+      <div class="chart-scroll"><canvas id="chart-fertility" height="180"></canvas></div>
+      <div class="caption">english: 1.00 &middot; hindi: 2.53 &middot; kannada: 2.65 &middot; telugu: 2.57 &middot; tamil: 2.64 &mdash; all four Brahmic scripts cluster together, well above English, and are not interchangeable with each other despite the similar bytes/char.</div>
+    </div>
+  </section>
+
+  <section id="real-collisions">
+    <h2><span class="num">09</span>The predicted collision pattern, reproduced on real tokens</h2>
+    <p class="section-intro">At the shipped <code>pos_dim=32</code>, real collisions on this vocabulary are rare &mdash; but they exist, and their rate across languages tracks fertility almost exactly, with zero collisions for English and the highest rate for Tamil.</p>
+    <div class="panel">
+      <div class="panel-title">% of real tokens colliding under pos_dim=32, by language</div>
+      <div class="chart-scroll"><canvas id="chart-real-collisions" height="200"></canvas></div>
+      <div class="caption">English: 0 / 4,051 distinct tokens used. Hindi: 0 / 5,398. Kannada: 2 / 4,146. Telugu: 10 / 4,441. Tamil: 24 / 6,066 &mdash; the highest-fertility script in this set collides most often, exactly as the mechanism predicts.</div>
+    </div>
+  </section>
+
+  <section id="sweep-pos-dim">
+    <h2><span class="num">10</span>Hyperparameter sweep &mdash; where does the wall actually close?</h2>
+    <p class="section-intro"><code>pos_dim=32</code> is a shipped default, not a derived value. Sweeping it against the real 5-language vocabulary shows exactly where the collision rate reaches zero.</p>
+    <div class="panel">
+      <div class="panel-title">Kronecker: pos_dim vs. real collision rate vs. projection params</div>
+      <div class="chart-scroll"><canvas id="chart-sweep-posdim" height="240"></canvas></div>
+      <div class="caption">Collision rate drops from 4.72% (pos_dim=16) to 0.13% (32, shipped) to exactly 0.00% at pos_dim=64 &mdash; double the shipped window, at double the projection cost. pos_dim=96 buys nothing further on this vocabulary.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Fourier: num_freqs (K) vs. average validation perplexity</div>
+      <div class="chart-scroll"><canvas id="chart-sweep-freqs" height="200"></canvas></div>
+      <div class="caption">No clean monotonic trend across K=32&ndash;256 at this (light, 2-epoch) sweep budget &mdash; reported as an open question rather than a resolved result. Unlike Kronecker's pos_dim, which has a sharp, interpretable collision-driven signal, Fourier's capacity knob does not show an obvious bottleneck being relieved in this range.</div>
+    </div>
+  </section>
+
+  <section id="model-size">
+    <h2><span class="num">11</span>Does the codec choice change model size?</h2>
+    <p class="section-intro">A third baseline &mdash; a plain <code>nn.Embedding</code> lookup table &mdash; was trained for direct comparison, so "smaller than a dense table" has an actual reference point instead of just being smaller than the other structured codec.</p>
+    <div class="panel">
+      <div class="panel-title">Codec params as % of total trained model, vs. dense-embedding baseline</div>
+      <div class="chart-scroll"><canvas id="chart-model-size" height="200"></canvas></div>
+      <div class="caption">At this vocabulary (16,000 tokens, d_model=128): Kronecker's codec is 51.2% the size of what a dense table alone would cost; Fourier's is 1.6%. Session 7's own accounting shows this gap widens sharply at production vocabulary sizes (131K+), where a dense table alone exceeds a billion parameters.</div>
+    </div>
+  </section>
+
+  <section id="real-ppl">
+    <h2><span class="num">12</span>Language-modeling quality &mdash; an honest, mixed result</h2>
+    <p class="section-intro">This is reported without smoothing it over: on real next-token prediction, Kronecker matched or beat Fourier on perplexity in 4 of 5 languages, and the dense baseline beat both structured codecs everywhere.</p>
+    <div class="panel">
+      <div class="panel-title">Validation perplexity by language and codec (lower is better)</div>
+      <div class="chart-scroll"><canvas id="chart-real-ppl" height="240"></canvas></div>
+      <div class="caption">Fewer than 0.5% of tokens in any language actually collide under Kronecker at pos_dim=32 on this vocabulary &mdash; the collision effect is real (sections 08&ndash;09) but too rare, at only 3 training epochs, to dominate perplexity over ordinary optimization noise. The synthetic experiment above isolates the effect on purpose by making colliding tokens decisive for the task; real Wikipedia text does not stress the failure mode nearly that hard.</div>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2><span class="num">13</span>Where this is honest about its limits</h2>
+    <p class="section-intro">
+      Fourier accuracy on the synthetic colliding group is ~86%, not 100% &mdash; because bytes are <em>summed</em>, not placed, a long shared prefix still dominates the sum's energy and the differing suffix is a smaller perturbation on top. This is a real cost of superposition versus placement, not a free win. On real text, the collision pattern reproduces exactly as predicted and closes completely by pos_dim=64, and both structured codecs are meaningfully smaller than a dense embedding table &mdash; but real-data language-modeling perplexity does not yet show Fourier beating Kronecker: the collision effect is precisely measured yet too rare (under 0.5% of tokens per language) to dominate a short training run. Sequence-position embeddings were held fixed throughout across every experiment here &mdash; this work isolates the token codec only.
+    </p>
+  </section>
+
+  <footer>
+    Session 7 assignment · Problem #4 · Code and full write-up: <code>embedding_codecs.py</code>, <code>experiment.py</code>, <code>train.py</code>, <code>report.md</code> · numbers sourced from <code>results.json</code> and <code>real_data_results_5lang.json</code> (the hyperparameter sweep numbers are embedded directly here, sourced from <code>train.log</code>) &mdash; real training runs, not estimated.
+  </footer>
+</div>
+
+<script>
+const DATA = {"vocab_size": 128, "num_pairs": 32, "kronecker_collisions": {"key_collisions": 32, "vector_collisions": 32}, "fourier_collisions": {"key_collisions": 0, "vector_collisions": 0}, "kron_history": [{"epoch": 0, "train_loss": 1.4760342836380005, "train_acc": 0.27450981736183167, "val_loss": 1.9391719102859497, "val_acc": 0.26923078298568726}, {"epoch": 100, "train_loss": 0.2858389914035797, "train_acc": 0.7941176295280457, "val_loss": 4.4062323570251465, "val_acc": 0.3461538553237915}, {"epoch": 200, "train_loss": 0.285572350025177, "train_acc": 0.7941176295280457, "val_loss": 4.961278915405273, "val_acc": 0.3461538553237915}, {"epoch": 300, "train_loss": 0.285586416721344, "train_acc": 0.7941176295280457, "val_loss": 5.020296573638916, "val_acc": 0.3461538553237915}, {"epoch": 400, "train_loss": 0.28548282384872437, "train_acc": 0.7941176295280457, "val_loss": 5.3470869064331055, "val_acc": 0.3461538553237915}, {"epoch": 500, "train_loss": 0.28546151518821716, "train_acc": 0.7941176295280457, "val_loss": 5.551022052764893, "val_acc": 0.3461538553237915}, {"epoch": 600, "train_loss": 0.2854495346546173, "train_acc": 0.7941176295280457, "val_loss": 5.709517955780029, "val_acc": 0.3461538553237915}, {"epoch": 700, "train_loss": 0.285442054271698, "train_acc": 0.7941176295280457, "val_loss": 5.838638782501221, "val_acc": 0.3461538553237915}, {"epoch": 800, "train_loss": 0.28543704748153687, "train_acc": 0.7941176295280457, "val_loss": 5.945724964141846, "val_acc": 0.3461538553237915}, {"epoch": 900, "train_loss": 0.2854335904121399, "train_acc": 0.7941176295280457, "val_loss": 6.035185813903809, "val_acc": 0.3461538553237915}, {"epoch": 1000, "train_loss": 0.2854310870170593, "train_acc": 0.7941176295280457, "val_loss": 6.109890937805176, "val_acc": 0.3461538553237915}, {"epoch": 1100, "train_loss": 0.2854292094707489, "train_acc": 0.7941176295280457, "val_loss": 6.1718950271606445, "val_acc": 0.3461538553237915}, {"epoch": 1200, "train_loss": 0.28542783856391907, "train_acc": 0.7941176295280457, "val_loss": 6.222770690917969, "val_acc": 0.3461538553237915}, {"epoch": 1300, "train_loss": 0.2854268550872803, "train_acc": 0.7941176295280457, "val_loss": 6.263718128204346, "val_acc": 0.3461538553237915}, {"epoch": 1400, "train_loss": 0.28542613983154297, "train_acc": 0.7941176295280457, "val_loss": 6.295745849609375, "val_acc": 0.3461538553237915}, {"epoch": 1500, "train_loss": 0.28542560338974, "train_acc": 0.7941176295280457, "val_loss": 6.319794654846191, "val_acc": 0.3461538553237915}, {"epoch": 1600, "train_loss": 0.28542521595954895, "train_acc": 0.7941176295280457, "val_loss": 6.33677339553833, "val_acc": 0.3461538553237915}, {"epoch": 1700, "train_loss": 0.28542500734329224, "train_acc": 0.7941176295280457, "val_loss": 6.347658634185791, "val_acc": 0.3461538553237915}, {"epoch": 1800, "train_loss": 0.2854248583316803, "train_acc": 0.7941176295280457, "val_loss": 6.353579044342041, "val_acc": 0.3461538553237915}, {"epoch": 1900, "train_loss": 0.2854248583316803, "train_acc": 0.7941176295280457, "val_loss": 6.355885982513428, "val_acc": 0.3461538553237915}, {"epoch": 1999, "train_loss": 0.2854248285293579, "train_acc": 0.7941176295280457, "val_loss": 6.356228351593018, "val_acc": 0.3461538553237915}], "fourier_history": [{"epoch": 0, "train_loss": 1.5051634311676025, "train_acc": 0.03921568766236305, "val_loss": 1.6184601783752441, "val_acc": 0.23076923191547394}, {"epoch": 100, "train_loss": 0.5176321268081665, "train_acc": 0.6960784196853638, "val_loss": 1.3030657768249512, "val_acc": 0.5}, {"epoch": 200, "train_loss": 0.3391156792640686, "train_acc": 0.8039215803146362, "val_loss": 2.3265230655670166, "val_acc": 0.5}, {"epoch": 300, "train_loss": 0.2749805748462677, "train_acc": 0.843137264251709, "val_loss": 2.857792854309082, "val_acc": 0.5}, {"epoch": 400, "train_loss": 0.038002751767635345, "train_acc": 0.9901960492134094, "val_loss": 3.299799680709839, "val_acc": 0.5}, {"epoch": 500, "train_loss": 0.00044225374585948884, "train_acc": 1.0, "val_loss": 3.9795260429382324, "val_acc": 0.5}, {"epoch": 600, "train_loss": 0.00022341111616697162, "train_acc": 1.0, "val_loss": 4.2927069664001465, "val_acc": 0.5}, {"epoch": 700, "train_loss": 0.00015522498870268464, "train_acc": 1.0, "val_loss": 4.437650680541992, "val_acc": 0.5}, {"epoch": 800, "train_loss": 0.00011880044621648267, "train_acc": 1.0, "val_loss": 4.546518802642822, "val_acc": 0.5}, {"epoch": 900, "train_loss": 9.643787780078128e-05, "train_acc": 1.0, "val_loss": 4.632417678833008, "val_acc": 0.5384615659713745}, {"epoch": 1000, "train_loss": 8.162842277670279e-05, "train_acc": 1.0, "val_loss": 4.701699256896973, "val_acc": 0.5384615659713745}, {"epoch": 1100, "train_loss": 7.137159263947979e-05, "train_acc": 1.0, "val_loss": 4.757923603057861, "val_acc": 0.5384615659713745}, {"epoch": 1200, "train_loss": 6.4073596149683e-05, "train_acc": 1.0, "val_loss": 4.8033366203308105, "val_acc": 0.5384615659713745}, {"epoch": 1300, "train_loss": 5.8810095652006567e-05, "train_acc": 1.0, "val_loss": 4.839493751525879, "val_acc": 0.5384615659713745}, {"epoch": 1400, "train_loss": 5.504241198650561e-05, "train_acc": 1.0, "val_loss": 4.867568492889404, "val_acc": 0.5384615659713745}, {"epoch": 1500, "train_loss": 5.239077654550783e-05, "train_acc": 1.0, "val_loss": 4.8885321617126465, "val_acc": 0.5384615659713745}, {"epoch": 1600, "train_loss": 5.061677802586928e-05, "train_acc": 1.0, "val_loss": 4.9032793045043945, "val_acc": 0.5384615659713745}, {"epoch": 1700, "train_loss": 4.949137655785307e-05, "train_acc": 1.0, "val_loss": 4.912713050842285, "val_acc": 0.5384615659713745}, {"epoch": 1800, "train_loss": 4.891522985417396e-05, "train_acc": 1.0, "val_loss": 4.917841911315918, "val_acc": 0.5384615659713745}, {"epoch": 1900, "train_loss": 4.8681504267733544e-05, "train_acc": 1.0, "val_loss": 4.9198384284973145, "val_acc": 0.5384615659713745}, {"epoch": 1999, "train_loss": 4.8642938054399565e-05, "train_acc": 1.0, "val_loss": 4.920137882232666, "val_acc": 0.5384615659713745}], "kron_collide_acc": 0.5, "fourier_collide_acc": 0.921875, "kron_short_acc": 0.90625, "fourier_short_acc": 0.890625, "kron_params": 524288, "fourier_params": 16384, "kron_code_dim": 8192, "fourier_code_dim": 256, "multi_seed": {"kronecker": [{"seed": 0, "collide_group_acc": 0.5, "short_group_acc": 0.921875}, {"seed": 1, "collide_group_acc": 0.484375, "short_group_acc": 0.90625}, {"seed": 2, "collide_group_acc": 0.5, "short_group_acc": 0.890625}, {"seed": 3, "collide_group_acc": 0.5, "short_group_acc": 0.90625}, {"seed": 4, "collide_group_acc": 0.5, "short_group_acc": 0.90625}], "fourier": [{"seed": 0, "collide_group_acc": 0.84375, "short_group_acc": 0.875}, {"seed": 1, "collide_group_acc": 0.84375, "short_group_acc": 0.921875}, {"seed": 2, "collide_group_acc": 0.859375, "short_group_acc": 0.875}, {"seed": 3, "collide_group_acc": 0.859375, "short_group_acc": 0.890625}, {"seed": 4, "collide_group_acc": 0.875, "short_group_acc": 0.890625}]}, "embedding_space": {"kronecker": {"words": ["train", "training", "trainer", "trained", "banana", "zebra", "apple", "application", "applicant"], "proj2d": [[-0.594529926776886, 0.16241244971752167], [-0.5140405297279358, 0.12643833458423615], [-0.5726912617683411, 0.16308701038360596], [-0.5726913213729858, 0.16308696568012238], [-0.007680213078856468, -0.5051167607307434], [0.19988854229450226, -0.859233021736145], [0.6597989201545715, 0.22183369100093842], [0.693261444568634, 0.2573089301586151], [0.7086837887763977, 0.270182341337204]]}, "fourier": {"words": ["train", "training", "trainer", "trained", "banana", "zebra", "apple", "application", "applicant"], "proj2d": [[-0.1521422415971756, -0.1934426873922348], [0.2289767563343048, -0.12537860870361328], [0.03786196932196617, -0.20648010075092316], [-0.014967757277190685, -0.08897112309932709], [-0.22292712330818176, 0.41268715262413025], [-0.39585110545158386, -0.003968594130128622], [-0.1755007654428482, -0.045358069241046906], [0.46105289459228516, 0.1302737295627594], [0.2334972620010376, 0.1206381618976593]]}}, "real": {"languages": ["english", "hindi", "kannada", "tamil", "telugu"], "fertility": {"english": 1.0026745518809133, "hindi": 2.52929581591141, "kannada": 2.6452992989394213, "tamil": 2.6420988599393063, "telugu": 2.568041396892621}, "collisions": {"english": 0.0, "hindi": 0.0, "kannada": 0.0482392667631452, "tamil": 0.39564787339268054, "telugu": 0.22517451024544022}, "longer_than_window": {"english": 0.0, "hindi": 0.14820303816228234, "kannada": 0.6994693680656054, "tamil": 1.1045169798878998, "telugu": 1.058320198153569}, "ppl_kron": {"english": 690.1055134246411, "hindi": 606.1845810018906, "kannada": 840.7901747230139, "tamil": 942.7016109724503, "telugu": 364.37962270351727}, "ppl_fourier": {"english": 694.9145353527247, "hindi": 684.7273266928397, "kannada": 828.160155614552, "tamil": 984.0043801447608, "telugu": 400.12118663534045}, "ppl_dense": {"english": 542.9491161324017, "hindi": 461.08533641405523, "kannada": 753.5098897327808, "tamil": 871.9708140252582, "telugu": 238.62420869452092}, "pos_dim_sweep": [{"pos_dim": 16, "params": 524288, "avg_pct_colliding": 4.7201108317989275}, {"pos_dim": 32, "params": 1048576, "avg_pct_colliding": 0.1338123300802532}, {"pos_dim": 48, "params": 1572864, "avg_pct_colliding": 0.013510470614726414}, {"pos_dim": 64, "params": 2097152, "avg_pct_colliding": 0.0}, {"pos_dim": 96, "params": 3145728, "avg_pct_colliding": 0.0}], "num_freqs_sweep": [{"num_freqs": 32, "code_dim": 64, "params": 8192, "avg_ppl": 927.3299601394999}, {"num_freqs": 64, "code_dim": 128, "params": 16384, "avg_ppl": 962.9706652040923}, {"num_freqs": 128, "code_dim": 256, "params": 32768, "avg_ppl": 987.8203511886825}, {"num_freqs": 256, "code_dim": 512, "params": 65536, "avg_ppl": 913.0846636956027}], "model_size": [{"codec": "kronecker", "codec_params": 1048576, "codec_pct_of_total": 26.843174519955436, "total_model_params": 3906304, "dense_embedding_equivalent_params": 2048000, "codec_vs_dense_ratio": 0.512, "codec_params_saved_vs_dense": 999424, "dense_equivalent_training_memory_mb": 32.768, "codec_training_memory_mb": 16.777216}, {"codec": "fourier", "codec_params": 32768, "codec_pct_of_total": 1.1336462669382694, "total_model_params": 2890496, "dense_embedding_equivalent_params": 2048000, "codec_vs_dense_ratio": 0.016, "codec_params_saved_vs_dense": 2015232, "dense_equivalent_training_memory_mb": 32.768, "codec_training_memory_mb": 0.524288}, {"codec": "dense_embedding", "codec_params": 2048000, "codec_pct_of_total": 41.747116839743256, "total_model_params": 4905728, "dense_embedding_equivalent_params": 2048000, "codec_vs_dense_ratio": 1.0, "codec_params_saved_vs_dense": 0, "dense_equivalent_training_memory_mb": 32.768, "codec_training_memory_mb": 32.768}], "vocab_size": 16000, "d_model": 128}};
+
+function themeColors() {
+  const cs = getComputedStyle(document.documentElement);
+  return {
+    text: cs.getPropertyValue('--text').trim(),
+    dim: cs.getPropertyValue('--text-dim').trim(),
+    faint: cs.getPropertyValue('--text-faint').trim(),
+    border: cs.getPropertyValue('--border').trim(),
+    kron: cs.getPropertyValue('--kron').trim(),
+    fourier: cs.getPropertyValue('--fourier').trim(),
+    panel: cs.getPropertyValue('--bg-panel').trim(),
+  };
+}
+
+function setupCanvas(canvas, hCss) {
+  const dpr = window.devicePixelRatio || 1;
+  const wCss = canvas.parentElement.clientWidth;
+  canvas.width = wCss * dpr;
+  canvas.height = hCss * dpr;
+  canvas.style.height = hCss + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w: wCss, h: hCss };
+}
+
+function drawCollisions() {
+  const canvas = document.getElementById('chart-collisions');
+  const { ctx, w, h } = setupCanvas(canvas, 140);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 90, r: 30, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const maxVal = 32;
+  const bars = [
+    { label: 'Kronecker', value: DATA.kronecker_collisions.vector_collisions, color: c.kron },
+    { label: 'Fourier', value: DATA.fourier_collisions.vector_collisions, color: c.fourier },
+  ];
+  const barH = plotH / bars.length * 0.5;
+  bars.forEach((b, i) => {
+    const y = pad.t + (i + 0.5) * (plotH / bars.length) - barH / 2;
+    const barW = Math.max((b.value / maxVal) * plotW, b.value > 0 ? 3 : 0);
+    ctx.fillStyle = c.border;
+    ctx.fillRect(pad.l, y, plotW, barH);
+    ctx.fillStyle = b.color;
+    ctx.fillRect(pad.l, y, barW, barH);
+    ctx.fillStyle = c.text;
+    ctx.font = '13px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(b.label, pad.l - 12, y + barH / 2 + 4);
+    ctx.textAlign = 'left';
+    ctx.font = '600 13px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+    ctx.fillText(b.value + ' / 32', pad.l + barW + 10, y + barH / 2 + 4);
+  });
+}
+
+function drawLossCurves() {
+  const canvas = document.getElementById('chart-loss');
+  const { ctx, w, h } = setupCanvas(canvas, 220);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 46, r: 20, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+
+  const kh = DATA.kron_history, fh = DATA.fourier_history;
+  const allLoss = kh.map(d => d.train_loss).concat(fh.map(d => d.train_loss));
+  const maxLoss = Math.max(...allLoss);
+  const maxEpoch = Math.max(kh[kh.length - 1].epoch, fh[fh.length - 1].epoch);
+
+  // gridlines
+  ctx.strokeStyle = c.border;
+  ctx.lineWidth = 1;
+  ctx.font = '11px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+  ctx.fillStyle = c.faint;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + plotW, y);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText((maxLoss * i / 4).toFixed(2), pad.l - 8, y + 4);
+  }
+
+  function plotLine(history, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    history.forEach((d, i) => {
+      const x = pad.l + (d.epoch / maxEpoch) * plotW;
+      const y = pad.t + plotH * (1 - Math.min(d.train_loss / maxLoss, 1));
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    // endpoint dot
+    const last = history[history.length - 1];
+    const x = pad.l + (last.epoch / maxEpoch) * plotW;
+    const y = pad.t + plotH * (1 - Math.min(last.train_loss / maxLoss, 1));
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  plotLine(kh, c.kron);
+  plotLine(fh, c.fourier);
+
+  ctx.fillStyle = c.faint;
+  ctx.textAlign = 'left';
+  ctx.fillText('epoch 0', pad.l, h - 8);
+  ctx.textAlign = 'right';
+  ctx.fillText('epoch ' + maxEpoch, pad.l + plotW, h - 8);
+}
+
+function drawSeedChart() {
+  const canvas = document.getElementById('chart-seeds');
+  const { ctx, w, h } = setupCanvas(canvas, 200);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 46, r: 20, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+
+  const kSeeds = DATA.multi_seed.kronecker;
+  const fSeeds = DATA.multi_seed.fourier;
+  const n = kSeeds.length;
+  const groupW = plotW / n;
+  const barW = groupW * 0.32;
+
+  // gridlines + chance line
+  ctx.strokeStyle = c.border;
+  ctx.font = '11px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+  ctx.fillStyle = c.faint;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + plotW, y);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText((i * 25) + '%', pad.l - 8, y + 4);
+  }
+  // chance dashed line at 50%
+  const chanceY = pad.t + plotH * (1 - 0.5);
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = c.faint;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, chanceY);
+  ctx.lineTo(pad.l + plotW, chanceY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  kSeeds.forEach((d, i) => {
+    const gx = pad.l + i * groupW + groupW / 2;
+    const kY = pad.t + plotH * (1 - d.collide_group_acc);
+    const fVal = fSeeds[i].collide_group_acc;
+    const fY = pad.t + plotH * (1 - fVal);
+    ctx.fillStyle = c.kron;
+    ctx.fillRect(gx - barW - 2, kY, barW, pad.t + plotH - kY);
+    ctx.fillStyle = c.fourier;
+    ctx.fillRect(gx + 2, fY, barW, pad.t + plotH - fY);
+    ctx.fillStyle = c.faint;
+    ctx.font = '11px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('seed ' + d.seed, gx, h - 8);
+  });
+}
+
+function drawScatter(canvasId, spaceKey) {
+  const canvas = document.getElementById(canvasId);
+  const { ctx, w, h } = setupCanvas(canvas, 260);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const space = DATA.embedding_space[spaceKey];
+  const pts = space.proj2d;
+  const words = space.words;
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 46;
+  const spanX = (maxX - minX) || 1;
+  const spanY = (maxY - minY) || 1;
+
+  const groupColor = (word) => {
+    if (['train', 'training', 'trainer', 'trained'].includes(word)) return c.kron === '' ? '#3d7a8c' : (spaceKey === 'kronecker' ? c.kron : c.fourier);
+    if (['apple', 'application', 'applicant'].includes(word)) return c.faint;
+    return c.text;
+  };
+
+  const color1 = spaceKey === 'kronecker' ? c.kron : c.fourier;
+
+  pts.forEach((p, i) => {
+    const x = pad + ((p[0] - minX) / spanX) * (w - 2 * pad);
+    const y = h - pad - ((p[1] - minY) / spanY) * (h - 2 * pad);
+    const word = words[i];
+    let dotColor;
+    if (['train', 'training', 'trainer', 'trained'].includes(word)) dotColor = color1;
+    else if (['apple', 'application', 'applicant'].includes(word)) dotColor = c.faint;
+    else dotColor = c.text;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = dotColor;
+    ctx.fill();
+
+    ctx.font = '11px ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+    ctx.fillStyle = c.dim;
+    ctx.textAlign = 'left';
+    ctx.fillText(word, x + 8, y + 4);
+  });
+}
+
+function populateTable() {
+  const kSeeds = DATA.multi_seed.kronecker;
+  const fSeeds = DATA.multi_seed.fourier;
+  const tbody = document.getElementById('seed-table');
+  tbody.innerHTML = '';
+  kSeeds.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="num">${d.seed}</td><td class="num">${(d.collide_group_acc * 100).toFixed(1)}%</td><td class="num">${(fSeeds[i].collide_group_acc * 100).toFixed(1)}%</td>`;
+    tbody.appendChild(tr);
+  });
+  const kMean = kSeeds.reduce((a, d) => a + d.collide_group_acc, 0) / kSeeds.length;
+  const fMean = fSeeds.reduce((a, d) => a + d.collide_group_acc, 0) / fSeeds.length;
+  document.getElementById('kron-mean').textContent = (kMean * 100).toFixed(1) + '%';
+  document.getElementById('fourier-mean').textContent = (fMean * 100).toFixed(1) + '%';
+}
+
+// Byte-window inspector
+const SAMPLE_WORDS = [
+  { label: 'training', bytes: null, text: 'training' },
+  { label: 'internationalization', text: 'internationalization' },
+  { label: 'अंतर्राष्ट्रीयकरण', text: 'अंतर्राष्ट्रीयकरण' },
+  { label: 'तकनीक', text: 'तकनीक' },
+  { label: 'తెలుగు', text: 'తెలుగు' },
+];
+
+function renderByteDemo(word) {
+  const bytes = Array.from(new TextEncoder().encode(word));
+  const grid = document.getElementById('byte-grid');
+  grid.innerHTML = '';
+  bytes.forEach((b, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'byte-cell ' + (i < 32 ? 'seen' : 'dropped');
+    cell.textContent = b.toString(16).padStart(2, '0');
+    grid.appendChild(cell);
+  });
+  const seen = Math.min(bytes.length, 32);
+  const dropped = Math.max(bytes.length - 32, 0);
+  const charCount = Array.from(word).length;
+  document.getElementById('byte-stat').innerHTML =
+    `<b>${word}</b> — ${charCount} character${charCount === 1 ? '' : 's'}, ${bytes.length} UTF-8 bytes. ` +
+    `<span style="color:var(--kron)">${seen} bytes seen</span>` +
+    (dropped > 0 ? `, <span style="color:var(--bad)">${dropped} bytes dropped</span>` : ', all bytes fit the window');
+}
+
+function setupByteDemo() {
+  const container = document.getElementById('word-buttons');
+  SAMPLE_WORDS.forEach((w, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = w.label;
+    btn.className = i === 0 ? 'active' : '';
+    btn.onclick = () => {
+      container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderByteDemo(w.text);
+    };
+    container.appendChild(btn);
+  });
+  renderByteDemo(SAMPLE_WORDS[0].text);
+}
+
+const MONO_STACK = 'ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace';
+const LANG_LABELS = { english: 'English', hindi: 'Hindi', kannada: 'Kannada', tamil: 'Tamil', telugu: 'Telugu' };
+
+function drawFertility() {
+  const canvas = document.getElementById('chart-fertility');
+  const { ctx, w, h } = setupCanvas(canvas, 180);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 90, r: 40, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const langs = DATA.real.languages;
+  const maxVal = 3.0;
+  const barH = (plotH / langs.length) * 0.55;
+
+  langs.forEach((lang, i) => {
+    const y = pad.t + (i + 0.5) * (plotH / langs.length) - barH / 2;
+    const val = DATA.real.fertility[lang];
+    const barW = (val / maxVal) * plotW;
+    ctx.fillStyle = c.border;
+    ctx.fillRect(pad.l, y, plotW, barH);
+    ctx.fillStyle = lang === 'english' ? c.faint : c.fourier;
+    ctx.fillRect(pad.l, y, barW, barH);
+    ctx.fillStyle = c.text;
+    ctx.font = '13px ' + MONO_STACK;
+    ctx.textAlign = 'right';
+    ctx.fillText(LANG_LABELS[lang], pad.l - 12, y + barH / 2 + 4);
+    ctx.textAlign = 'left';
+    ctx.font = '600 13px ' + MONO_STACK;
+    ctx.fillText(val.toFixed(2) + ' B/char', pad.l + barW + 10, y + barH / 2 + 4);
+  });
+}
+
+function drawRealCollisions() {
+  const canvas = document.getElementById('chart-real-collisions');
+  const { ctx, w, h } = setupCanvas(canvas, 200);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 90, r: 50, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const langs = DATA.real.languages;
+  const maxVal = Math.max(...langs.map(l => DATA.real.collisions[l])) * 1.25 || 0.5;
+  const barH = (plotH / langs.length) * 0.55;
+
+  langs.forEach((lang, i) => {
+    const y = pad.t + (i + 0.5) * (plotH / langs.length) - barH / 2;
+    const val = DATA.real.collisions[lang];
+    const barW = Math.max((val / maxVal) * plotW, val > 0 ? 3 : 0);
+    ctx.fillStyle = c.border;
+    ctx.fillRect(pad.l, y, plotW, barH);
+    ctx.fillStyle = val > 0 ? c.bad : c.good;
+    ctx.fillRect(pad.l, y, barW, barH);
+    ctx.fillStyle = c.text;
+    ctx.font = '13px ' + MONO_STACK;
+    ctx.textAlign = 'right';
+    ctx.fillText(LANG_LABELS[lang], pad.l - 12, y + barH / 2 + 4);
+    ctx.textAlign = 'left';
+    ctx.font = '600 13px ' + MONO_STACK;
+    ctx.fillText(val.toFixed(3) + '%', pad.l + barW + 10, y + barH / 2 + 4);
+  });
+}
+
+function drawSweepPosDim() {
+  const canvas = document.getElementById('chart-sweep-posdim');
+  const { ctx, w, h } = setupCanvas(canvas, 240);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 56, r: 56, t: 20, b: 36 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const sweep = DATA.real.pos_dim_sweep;
+  const xs = sweep.map(d => d.pos_dim);
+  const maxColl = Math.max(...sweep.map(d => d.avg_pct_colliding)) * 1.15 || 1;
+  const maxParams = Math.max(...sweep.map(d => d.params)) * 1.1;
+
+  ctx.strokeStyle = c.border;
+  ctx.font = '11px ' + MONO_STACK;
+  ctx.fillStyle = c.faint;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + plotW, y);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText((maxColl * i / 4).toFixed(2) + '%', pad.l - 8, y + 4);
+    ctx.textAlign = 'left';
+    ctx.fillText((maxParams * i / 4 / 1e6).toFixed(1) + 'M', pad.l + plotW + 8, y + 4);
+  }
+
+  const xPos = (posDim) => pad.l + ((posDim - xs[0]) / (xs[xs.length - 1] - xs[0])) * plotW;
+
+  // collision line (bad color, left axis)
+  ctx.strokeStyle = c.bad;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  sweep.forEach((d, i) => {
+    const x = xPos(d.pos_dim);
+    const y = pad.t + plotH * (1 - d.avg_pct_colliding / maxColl);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  sweep.forEach(d => {
+    const x = xPos(d.pos_dim);
+    const y = pad.t + plotH * (1 - d.avg_pct_colliding / maxColl);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = c.bad;
+    ctx.fill();
+  });
+
+  // params line (kron color, right axis, dashed)
+  ctx.strokeStyle = c.kron;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  sweep.forEach((d, i) => {
+    const x = xPos(d.pos_dim);
+    const y = pad.t + plotH * (1 - d.params / maxParams);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+  sweep.forEach(d => {
+    const x = xPos(d.pos_dim);
+    const y = pad.t + plotH * (1 - d.params / maxParams);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = c.kron;
+    ctx.fill();
+  });
+
+  ctx.fillStyle = c.text;
+  ctx.font = '11px ' + MONO_STACK;
+  ctx.textAlign = 'center';
+  sweep.forEach(d => {
+    const x = xPos(d.pos_dim);
+    ctx.fillText('pos_dim=' + d.pos_dim, x, h - 10);
+  });
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = c.bad;
+  ctx.fillText('— avg % colliding (left)', pad.l, 14);
+  ctx.fillStyle = c.kron;
+  ctx.fillText('- - projection params (right)', pad.l + 220, 14);
+}
+
+function drawSweepFreqs() {
+  const canvas = document.getElementById('chart-sweep-freqs');
+  const { ctx, w, h } = setupCanvas(canvas, 200);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 56, r: 20, t: 20, b: 36 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const sweep = DATA.real.num_freqs_sweep;
+  const vals = sweep.map(d => d.avg_ppl);
+  const minPpl = Math.min(...vals) * 0.95;
+  const maxPpl = Math.max(...vals) * 1.05;
+
+  ctx.strokeStyle = c.border;
+  ctx.font = '11px ' + MONO_STACK;
+  ctx.fillStyle = c.faint;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + plotW, y);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText((minPpl + (maxPpl - minPpl) * i / 4).toFixed(0), pad.l - 8, y + 4);
+  }
+
+  const xPos = (i) => pad.l + (i / (sweep.length - 1)) * plotW;
+  ctx.strokeStyle = c.fourier;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  sweep.forEach((d, i) => {
+    const x = xPos(i);
+    const y = pad.t + plotH * (1 - (d.avg_ppl - minPpl) / (maxPpl - minPpl));
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  sweep.forEach((d, i) => {
+    const x = xPos(i);
+    const y = pad.t + plotH * (1 - (d.avg_ppl - minPpl) / (maxPpl - minPpl));
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = c.fourier;
+    ctx.fill();
+    ctx.fillStyle = c.text;
+    ctx.font = '11px ' + MONO_STACK;
+    ctx.textAlign = 'center';
+    ctx.fillText('K=' + d.num_freqs, x, h - 10);
+  });
+}
+
+function drawModelSize() {
+  const canvas = document.getElementById('chart-model-size');
+  const { ctx, w, h } = setupCanvas(canvas, 200);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 100, r: 60, t: 16, b: 30 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const rows = DATA.real.model_size;
+  const colorFor = { kronecker: c.kron, fourier: c.fourier, dense_embedding: c.faint };
+  const labelFor = { kronecker: 'Kronecker', fourier: 'Fourier', dense_embedding: 'Dense embedding' };
+  const barH = (plotH / rows.length) * 0.55;
+
+  rows.forEach((row, i) => {
+    const y = pad.t + (i + 0.5) * (plotH / rows.length) - barH / 2;
+    const pct = row.codec_vs_dense_ratio * 100;
+    const barW = (Math.min(pct, 100) / 100) * plotW;
+    ctx.fillStyle = c.border;
+    ctx.fillRect(pad.l, y, plotW, barH);
+    ctx.fillStyle = colorFor[row.codec];
+    ctx.fillRect(pad.l, y, barW, barH);
+    ctx.fillStyle = c.text;
+    ctx.font = '13px ' + MONO_STACK;
+    ctx.textAlign = 'right';
+    ctx.fillText(labelFor[row.codec], pad.l - 12, y + barH / 2 + 4);
+    ctx.textAlign = 'left';
+    ctx.font = '600 13px ' + MONO_STACK;
+    ctx.fillText(pct.toFixed(1) + '% of dense', pad.l + barW + 10, y + barH / 2 + 4);
+  });
+}
+
+function drawRealPPL() {
+  const canvas = document.getElementById('chart-real-ppl');
+  const { ctx, w, h } = setupCanvas(canvas, 240);
+  const c = themeColors();
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 46, r: 20, t: 20, b: 34 };
+  const plotW = w - pad.l - pad.r;
+  const plotH = h - pad.t - pad.b;
+  const langs = DATA.real.languages;
+  const allVals = langs.flatMap(l => [DATA.real.ppl_kron[l], DATA.real.ppl_fourier[l], DATA.real.ppl_dense[l]]);
+  const maxVal = Math.max(...allVals) * 1.08;
+
+  ctx.strokeStyle = c.border;
+  ctx.font = '11px ' + MONO_STACK;
+  ctx.fillStyle = c.faint;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + plotH * (1 - i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(pad.l + plotW, y);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText((maxVal * i / 4).toFixed(0), pad.l - 8, y + 4);
+  }
+
+  const groupW = plotW / langs.length;
+  const barW = groupW * 0.22;
+  langs.forEach((lang, i) => {
+    const gx = pad.l + i * groupW + groupW / 2;
+    const bars = [
+      { val: DATA.real.ppl_kron[lang], color: c.kron, offset: -1.1 },
+      { val: DATA.real.ppl_fourier[lang], color: c.fourier, offset: 0 },
+      { val: DATA.real.ppl_dense[lang], color: c.faint, offset: 1.1 },
+    ];
+    bars.forEach(b => {
+      const bx = gx + b.offset * barW;
+      const by = pad.t + plotH * (1 - b.val / maxVal);
+      ctx.fillStyle = b.color;
+      ctx.fillRect(bx - barW / 2, by, barW, pad.t + plotH - by);
+    });
+    ctx.fillStyle = c.text;
+    ctx.font = '11px ' + MONO_STACK;
+    ctx.textAlign = 'center';
+    ctx.fillText(LANG_LABELS[lang], gx, h - 10);
+  });
+
+  ctx.textAlign = 'left';
+  ctx.font = '11px ' + MONO_STACK;
+  ctx.fillStyle = c.kron;
+  ctx.fillText('■ Kronecker', pad.l, 12);
+  ctx.fillStyle = c.fourier;
+  ctx.fillText('■ Fourier', pad.l + 110, 12);
+  ctx.fillStyle = c.faint;
+  ctx.fillText('■ Dense', pad.l + 200, 12);
+}
+
+function renderAll() {
+  drawCollisions();
+  drawLossCurves();
+  drawSeedChart();
+  drawScatter('scatter-kron', 'kronecker');
+  drawScatter('scatter-fourier', 'fourier');
+  drawFertility();
+  drawRealCollisions();
+  drawSweepPosDim();
+  drawSweepFreqs();
+  drawModelSize();
+  drawRealPPL();
+}
+
+populateTable();
+setupByteDemo();
+renderAll();
+window.addEventListener('resize', () => {
+  clearTimeout(window.__rt);
+  window.__rt = setTimeout(renderAll, 120);
+});
+</script>

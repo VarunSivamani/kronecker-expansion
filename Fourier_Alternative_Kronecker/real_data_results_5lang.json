@@ -1,0 +1,529 @@
+{
+  "vocab_size": 16000,
+  "d_model": 128,
+  "languages": [
+    "english",
+    "hindi",
+    "kannada",
+    "tamil",
+    "telugu"
+  ],
+  "fertility_by_language": {
+    "english": {
+      "n_docs": 3000,
+      "total_chars": 2354787,
+      "total_tokens": 683887,
+      "bytes_per_char": 1.0026745518809133,
+      "tokens_per_char": 0.29042414451922827,
+      "chars_per_token": 3.443239891970457
+    },
+    "hindi": {
+      "n_docs": 2974,
+      "total_chars": 1945585,
+      "total_tokens": 598350,
+      "bytes_per_char": 2.52929581591141,
+      "tokens_per_char": 0.3075424615218559,
+      "chars_per_token": 3.2515835213503803
+    },
+    "kannada": {
+      "n_docs": 2128,
+      "total_chars": 1279490,
+      "total_tokens": 397402,
+      "bytes_per_char": 2.6452992989394213,
+      "tokens_per_char": 0.3105940648227028,
+      "chars_per_token": 3.2196365393229023
+    },
+    "tamil": {
+      "n_docs": 2991,
+      "total_chars": 2194620,
+      "total_tokens": 586373,
+      "bytes_per_char": 2.6420988599393063,
+      "tokens_per_char": 0.2671865744411333,
+      "chars_per_token": 3.7427030235021053
+    },
+    "telugu": {
+      "n_docs": 2998,
+      "total_chars": 2296984,
+      "total_tokens": 629213,
+      "bytes_per_char": 2.568041396892621,
+      "tokens_per_char": 0.2739300752639113,
+      "chars_per_token": 3.6505666602565428
+    }
+  },
+  "collision_by_language": {
+    "english": {
+      "distinct_tokens_used": 4051,
+      "tokens_longer_than_window": 0,
+      "pct_longer_than_window": 0.0,
+      "colliding_tokens": 0,
+      "pct_colliding": 0.0
+    },
+    "hindi": {
+      "distinct_tokens_used": 5398,
+      "tokens_longer_than_window": 8,
+      "pct_longer_than_window": 0.14820303816228234,
+      "colliding_tokens": 0,
+      "pct_colliding": 0.0
+    },
+    "kannada": {
+      "distinct_tokens_used": 4146,
+      "tokens_longer_than_window": 29,
+      "pct_longer_than_window": 0.6994693680656054,
+      "colliding_tokens": 2,
+      "pct_colliding": 0.0482392667631452
+    },
+    "tamil": {
+      "distinct_tokens_used": 6066,
+      "tokens_longer_than_window": 67,
+      "pct_longer_than_window": 1.1045169798878998,
+      "colliding_tokens": 24,
+      "pct_colliding": 0.39564787339268054
+    },
+    "telugu": {
+      "distinct_tokens_used": 4441,
+      "tokens_longer_than_window": 47,
+      "pct_longer_than_window": 1.058320198153569,
+      "colliding_tokens": 10,
+      "pct_colliding": 0.22517451024544022
+    }
+  },
+  "kronecker": {
+    "codec": "kronecker",
+    "epoch_history": [
+      {
+        "epoch": 0,
+        "per_language": {
+          "english": {
+            "val_loss": 7.52581542893754,
+            "val_ppl": 1855.3254955309833
+          },
+          "hindi": {
+            "val_loss": 7.747746565459446,
+            "val_ppl": 2316.3467931528135
+          },
+          "kannada": {
+            "val_loss": 8.391555501974205,
+            "val_ppl": 4409.671615108894
+          },
+          "tamil": {
+            "val_loss": 8.36586077196341,
+            "val_ppl": 4297.809580300908
+          },
+          "telugu": {
+            "val_loss": 7.976518229446635,
+            "val_ppl": 2911.775260891508
+          }
+        }
+      },
+      {
+        "epoch": 1,
+        "per_language": {
+          "english": {
+            "val_loss": 6.826035909262582,
+            "val_ppl": 921.5305317845056
+          },
+          "hindi": {
+            "val_loss": 6.696061205025967,
+            "val_ppl": 809.2122187956893
+          },
+          "kannada": {
+            "val_loss": 7.1582190245267325,
+            "val_ppl": 1284.6210158464316
+          },
+          "tamil": {
+            "val_loss": 7.259471383306023,
+            "val_ppl": 1421.5049073320483
+          },
+          "telugu": {
+            "val_loss": 6.507291116357449,
+            "val_ppl": 670.0089807217217
+          }
+        }
+      },
+      {
+        "epoch": 2,
+        "per_language": {
+          "english": {
+            "val_loss": 6.536844503907265,
+            "val_ppl": 690.1055134246411
+          },
+          "hindi": {
+            "val_loss": 6.407184528803499,
+            "val_ppl": 606.1845810018906
+          },
+          "kannada": {
+            "val_loss": 6.734342133865318,
+            "val_ppl": 840.7901747230139
+          },
+          "tamil": {
+            "val_loss": 6.848749807292604,
+            "val_ppl": 942.7016109724503
+          },
+          "telugu": {
+            "val_loss": 5.898196243689166,
+            "val_ppl": 364.37962270351727
+          }
+        }
+      }
+    ],
+    "final_per_language": {
+      "english": {
+        "val_loss": 6.536844503907265,
+        "val_ppl": 690.1055134246411
+      },
+      "hindi": {
+        "val_loss": 6.407184528803499,
+        "val_ppl": 606.1845810018906
+      },
+      "kannada": {
+        "val_loss": 6.734342133865318,
+        "val_ppl": 840.7901747230139
+      },
+      "tamil": {
+        "val_loss": 6.848749807292604,
+        "val_ppl": 942.7016109724503
+      },
+      "telugu": {
+        "val_loss": 5.898196243689166,
+        "val_ppl": 364.37962270351727
+      }
+    },
+    "codec_projection_params": 1048576,
+    "codec_code_dim": 8192,
+    "total_trainable_params": 3906304,
+    "size_breakdown": {
+      "codec_params": 1048576,
+      "pos_embedding_params": 16384,
+      "transformer_block_params": 793088,
+      "final_norm_params": 256,
+      "lm_head_params": 2048000,
+      "total_model_params": 3906304,
+      "codec_pct_of_total": 26.843174519955436,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 0.512,
+      "codec_params_saved_vs_dense": 999424,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 16.777216
+    }
+  },
+  "fourier": {
+    "codec": "fourier",
+    "epoch_history": [
+      {
+        "epoch": 0,
+        "per_language": {
+          "english": {
+            "val_loss": 7.047317743647173,
+            "val_ppl": 1149.7706235118676
+          },
+          "hindi": {
+            "val_loss": 7.110843557889011,
+            "val_ppl": 1225.1806210795735
+          },
+          "kannada": {
+            "val_loss": 8.148722856601164,
+            "val_ppl": 3458.958657116834
+          },
+          "tamil": {
+            "val_loss": 8.096938210355122,
+            "val_ppl": 3284.3965333849196
+          },
+          "telugu": {
+            "val_loss": 7.6791745786183725,
+            "val_ppl": 2162.833785601722
+          }
+        }
+      },
+      {
+        "epoch": 1,
+        "per_language": {
+          "english": {
+            "val_loss": 6.774155540040834,
+            "val_ppl": 874.9401990164287
+          },
+          "hindi": {
+            "val_loss": 6.703998659046163,
+            "val_ppl": 815.6608626248525
+          },
+          "kannada": {
+            "val_loss": 6.970275627917085,
+            "val_ppl": 1064.5161204667509
+          },
+          "tamil": {
+            "val_loss": 7.153984832373467,
+            "val_ppl": 1279.1931829742468
+          },
+          "telugu": {
+            "val_loss": 6.424929346656817,
+            "val_ppl": 617.0372202602346
+          }
+        }
+      },
+      {
+        "epoch": 2,
+        "per_language": {
+          "english": {
+            "val_loss": 6.54378886728777,
+            "val_ppl": 694.9145353527247
+          },
+          "hindi": {
+            "val_loss": 6.529020695791898,
+            "val_ppl": 684.7273266928397
+          },
+          "kannada": {
+            "val_loss": 6.719206560336379,
+            "val_ppl": 828.160155614552
+          },
+          "tamil": {
+            "val_loss": 6.891630348408973,
+            "val_ppl": 984.0043801447608
+          },
+          "telugu": {
+            "val_loss": 5.991767467811224,
+            "val_ppl": 400.12118663534045
+          }
+        }
+      }
+    ],
+    "final_per_language": {
+      "english": {
+        "val_loss": 6.54378886728777,
+        "val_ppl": 694.9145353527247
+      },
+      "hindi": {
+        "val_loss": 6.529020695791898,
+        "val_ppl": 684.7273266928397
+      },
+      "kannada": {
+        "val_loss": 6.719206560336379,
+        "val_ppl": 828.160155614552
+      },
+      "tamil": {
+        "val_loss": 6.891630348408973,
+        "val_ppl": 984.0043801447608
+      },
+      "telugu": {
+        "val_loss": 5.991767467811224,
+        "val_ppl": 400.12118663534045
+      }
+    },
+    "codec_projection_params": 32768,
+    "codec_code_dim": 256,
+    "total_trainable_params": 2890496,
+    "size_breakdown": {
+      "codec_params": 32768,
+      "pos_embedding_params": 16384,
+      "transformer_block_params": 793088,
+      "final_norm_params": 256,
+      "lm_head_params": 2048000,
+      "total_model_params": 2890496,
+      "codec_pct_of_total": 1.1336462669382694,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 0.016,
+      "codec_params_saved_vs_dense": 2015232,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 0.524288
+    }
+  },
+  "dense_embedding": {
+    "codec": "dense_embedding",
+    "epoch_history": [
+      {
+        "epoch": 0,
+        "per_language": {
+          "english": {
+            "val_loss": 6.927986008331848,
+            "val_ppl": 1020.4367575763389
+          },
+          "hindi": {
+            "val_loss": 6.928624404644427,
+            "val_ppl": 1021.0884086232774
+          },
+          "kannada": {
+            "val_loss": 7.877979528467084,
+            "val_ppl": 2638.536083373693
+          },
+          "tamil": {
+            "val_loss": 7.790789807993719,
+            "val_ppl": 2418.226762980686
+          },
+          "telugu": {
+            "val_loss": 7.015943433446221,
+            "val_ppl": 1114.2573781640178
+          }
+        }
+      },
+      {
+        "epoch": 1,
+        "per_language": {
+          "english": {
+            "val_loss": 6.544443701898616,
+            "val_ppl": 695.3697384671647
+          },
+          "hindi": {
+            "val_loss": 6.428454236343322,
+            "val_ppl": 619.2160461986949
+          },
+          "kannada": {
+            "val_loss": 6.887783519602537,
+            "val_ppl": 980.2263551162783
+          },
+          "tamil": {
+            "val_loss": 7.021445999395138,
+            "val_ppl": 1120.4055527264502
+          },
+          "telugu": {
+            "val_loss": 5.835651697771001,
+            "val_ppl": 342.2877295299289
+          }
+        }
+      },
+      {
+        "epoch": 2,
+        "per_language": {
+          "english": {
+            "val_loss": 6.297015606762886,
+            "val_ppl": 542.9491161324017
+          },
+          "hindi": {
+            "val_loss": 6.133583137392859,
+            "val_ppl": 461.08533641405523
+          },
+          "kannada": {
+            "val_loss": 6.624742143040511,
+            "val_ppl": 753.5098897327808
+          },
+          "tamil": {
+            "val_loss": 6.770755953194321,
+            "val_ppl": 871.9708140252582
+          },
+          "telugu": {
+            "val_loss": 5.474889965935734,
+            "val_ppl": 238.62420869452092
+          }
+        }
+      }
+    ],
+    "final_per_language": {
+      "english": {
+        "val_loss": 6.297015606762886,
+        "val_ppl": 542.9491161324017
+      },
+      "hindi": {
+        "val_loss": 6.133583137392859,
+        "val_ppl": 461.08533641405523
+      },
+      "kannada": {
+        "val_loss": 6.624742143040511,
+        "val_ppl": 753.5098897327808
+      },
+      "tamil": {
+        "val_loss": 6.770755953194321,
+        "val_ppl": 871.9708140252582
+      },
+      "telugu": {
+        "val_loss": 5.474889965935734,
+        "val_ppl": 238.62420869452092
+      }
+    },
+    "codec_projection_params": 2048000,
+    "codec_code_dim": 128,
+    "total_trainable_params": 4905728,
+    "size_breakdown": {
+      "codec_params": 2048000,
+      "pos_embedding_params": 16384,
+      "transformer_block_params": 793088,
+      "final_norm_params": 256,
+      "lm_head_params": 2048000,
+      "total_model_params": 4905728,
+      "codec_pct_of_total": 41.747116839743256,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 1.0,
+      "codec_params_saved_vs_dense": 0,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 32.768
+    }
+  },
+  "comparative_summary": [
+    {
+      "language": "english",
+      "bytes_per_char": 1.0026745518809133,
+      "pct_longer_than_32B": 0.0,
+      "pct_colliding": 0.0,
+      "kronecker_val_ppl": 690.1055134246411,
+      "fourier_val_ppl": 694.9145353527247,
+      "ppl_delta_kron_minus_fourier": -4.809021928083553
+    },
+    {
+      "language": "hindi",
+      "bytes_per_char": 2.52929581591141,
+      "pct_longer_than_32B": 0.14820303816228234,
+      "pct_colliding": 0.0,
+      "kronecker_val_ppl": 606.1845810018906,
+      "fourier_val_ppl": 684.7273266928397,
+      "ppl_delta_kron_minus_fourier": -78.54274569094912
+    },
+    {
+      "language": "kannada",
+      "bytes_per_char": 2.6452992989394213,
+      "pct_longer_than_32B": 0.6994693680656054,
+      "pct_colliding": 0.0482392667631452,
+      "kronecker_val_ppl": 840.7901747230139,
+      "fourier_val_ppl": 828.160155614552,
+      "ppl_delta_kron_minus_fourier": 12.630019108461966
+    },
+    {
+      "language": "tamil",
+      "bytes_per_char": 2.6420988599393063,
+      "pct_longer_than_32B": 1.1045169798878998,
+      "pct_colliding": 0.39564787339268054,
+      "kronecker_val_ppl": 942.7016109724503,
+      "fourier_val_ppl": 984.0043801447608,
+      "ppl_delta_kron_minus_fourier": -41.30276917231049
+    },
+    {
+      "language": "telugu",
+      "bytes_per_char": 2.568041396892621,
+      "pct_longer_than_32B": 1.058320198153569,
+      "pct_colliding": 0.22517451024544022,
+      "kronecker_val_ppl": 364.37962270351727,
+      "fourier_val_ppl": 400.12118663534045,
+      "ppl_delta_kron_minus_fourier": -35.74156393182318
+    }
+  ],
+  "model_size_comparison": [
+    {
+      "codec": "kronecker",
+      "codec_params": 1048576,
+      "codec_pct_of_total": 26.843174519955436,
+      "total_model_params": 3906304,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 0.512,
+      "codec_params_saved_vs_dense": 999424,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 16.777216
+    },
+    {
+      "codec": "fourier",
+      "codec_params": 32768,
+      "codec_pct_of_total": 1.1336462669382694,
+      "total_model_params": 2890496,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 0.016,
+      "codec_params_saved_vs_dense": 2015232,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 0.524288
+    },
+    {
+      "codec": "dense_embedding",
+      "codec_params": 2048000,
+      "codec_pct_of_total": 41.747116839743256,
+      "total_model_params": 4905728,
+      "dense_embedding_equivalent_params": 2048000,
+      "codec_vs_dense_ratio": 1.0,
+      "codec_params_saved_vs_dense": 0,
+      "dense_equivalent_training_memory_mb": 32.768,
+      "codec_training_memory_mb": 32.768
+    }
+  ]
+}
