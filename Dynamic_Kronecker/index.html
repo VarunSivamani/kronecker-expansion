@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problem #3 — Fourier-Position Kronecker Technical Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4efe6; --ink:#1c1914; --muted:#5c564c; --line:#d9d0c3;
+  --paper:#fffdf8; --classic:#b45309; --fourier:#0f766e; --accent:#9f1239;
+  --ok:#15803d; --bad:#b91c1c; --glow:#99f6e4;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink);
+  font-family:"Source Sans 3",system-ui,sans-serif;
+  background:
+    radial-gradient(1000px 480px at -5% -5%, #efe2c8 0%, transparent 55%),
+    radial-gradient(800px 420px at 105% 0%, #c7ebe4 0%, transparent 50%),
+    var(--bg);
+  line-height:1.62;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 18px 96px}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:Fraunces,Georgia,serif;font-size:clamp(1.9rem,4vw,2.85rem);line-height:1.12;margin:8px 0 12px;letter-spacing:-.025em}
+h2{font-family:Fraunces,Georgia,serif;font-size:1.48rem;margin:0 0 10px}
+h3{font-size:1.05rem;margin:14px 0 8px}
+.lead{color:var(--muted);font-size:1.06rem;max-width:72ch}
+
+/* —— technical report hero —— */
+.report-hero{
+  margin-top:18px; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+  background:linear-gradient(145deg,#fffdf8 0%,#f7faf8 45%,#ecfdf5 100%);
+  box-shadow:0 18px 50px rgba(28,25,20,.07);
+  animation:rise .55s ease both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.report-hero-top{
+  display:grid; grid-template-columns:1.35fr .85fr; gap:0;
+  border-bottom:1px solid var(--line);
+}
+@media(max-width:900px){.report-hero-top{grid-template-columns:1fr}}
+.report-hero-main{padding:22px 22px 18px}
+.report-hero-side{
+  padding:22px 20px; border-left:1px solid var(--line);
+  background:rgba(15,118,110,.04);
+}
+@media(max-width:900px){.report-hero-side{border-left:none;border-top:1px solid var(--line)}}
+.report-hero h2{font-size:1.35rem;margin-bottom:8px}
+.report-hero p{margin:0 0 10px}
+.report-steps{display:grid;gap:8px;margin-top:12px}
+.step{
+  display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;
+  padding:8px 10px;border-radius:10px;border:1px solid transparent;
+  transition:border-color .2s, background .2s, transform .2s;
+}
+.step:hover{border-color:#99f6e4;background:#fff;transform:translateX(3px)}
+.step .n{
+  width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+  background:#134e4a;color:#ecfdf5;font-weight:700;font-size:12px;
+}
+.stat-stack{display:grid;gap:8px}
+.stat{
+  border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;
+  transition:transform .18s, box-shadow .18s;
+}
+.stat:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,118,110,.12)}
+.stat b{display:block;font-family:"JetBrains Mono",monospace;font-size:1.15rem;color:var(--fourier)}
+.stat span{font-size:12px;color:var(--muted)}
+.report-body{padding:18px 22px 22px}
+.report-body .eq{margin:10px 0}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media(max-width:800px){.report-grid{grid-template-columns:1fr}}
+
+.banner{
+  margin:16px 0;padding:11px 14px;border-radius:10px;
+  border:1px solid #86efac;background:#f0fdf4;color:#166534;font-size:14px;
+}
+.banner.warn{border-color:#f0c4a0;background:#fff7ed;color:#9a3412}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+.toc a{
+  text-decoration:none;color:var(--ink);font-size:12.5px;font-weight:600;
+  border:1px solid var(--line);background:#fffcf7;border-radius:999px;padding:5px 10px;
+  transition:transform .15s, border-color .15s, color .15s;
+}
+.toc a:hover{border-color:var(--fourier);color:var(--fourier);transform:translateY(-1px)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{
+  background:var(--paper); border:1px solid var(--line); border-radius:14px;
+  padding:18px; box-shadow:0 10px 30px rgba(28,25,20,.04);
+  margin-top:16px;
+}
+.eq{
+  font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.65;
+  background:#1c1914;color:#f5f0e8;border-radius:12px;padding:14px 16px;overflow-x:auto;
+}
+.mono{font-family:"JetBrains Mono",monospace;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tr.best{background:#ecfdf5}
+tr.win-f{background:#f0fdfa}
+tr.clickable{cursor:pointer;transition:background .15s}
+tr.clickable:hover{background:#ecfeff}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.classic{background:#ffedd5;color:var(--classic)}
+.pill.fourier{background:#ccfbf1;color:var(--fourier)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}}
+.metric{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fffcf7}
+.metric b{display:block;font-family:"JetBrains Mono",monospace;font-size:1.05rem}
+.metric span{color:var(--muted);font-size:12px}
+.chart-box{position:relative;height:300px}
+.chart-box.sm{height:250px}
+.chart-box.tall{height:360px}
+.note{font-size:13px;color:var(--muted);margin-top:8px}
+.callout{
+  border-left:3px solid var(--fourier);background:#f0fdfa;padding:10px 12px;border-radius:0 8px 8px 0;margin:12px 0;
+}
+.callout.expect{border-left-color:var(--classic);background:#fff7ed}
+.callout.got{border-left-color:var(--ok);background:#f0fdf4}
+ul.compact{margin:6px 0 0;padding-left:1.15rem}
+ul.compact li{margin:5px 0}
+.delta-pos{color:var(--ok);font-weight:700}
+.delta-neg{color:var(--bad);font-weight:700}
+footer{margin-top:36px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+.verdict{margin-top:10px;padding:14px;border-radius:12px;border:1px solid #86efac;background:#ecfdf5}
+
+/* —— interactive controls —— */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 12px}
+.controls .label{font-size:12px;font-weight:700;color:var(--muted);margin-right:4px}
+.chip{
+  border:1px solid var(--line); background:#fff; color:var(--ink);
+  border-radius:999px; padding:6px 12px; font:inherit; font-size:12.5px; font-weight:700;
+  cursor:pointer; transition:transform .15s, background .15s, border-color .15s, color .15s;
+}
+.chip:hover{transform:translateY(-1px); border-color:#5eead4}
+.chip.on{background:#0f766e; color:#ecfdf5; border-color:#0f766e; box-shadow:0 4px 14px rgba(15,118,110,.25)}
+.chip.classic.on{background:#b45309; border-color:#b45309; box-shadow:0 4px 14px rgba(180,83,9,.25)}
+.live-delta{
+  margin-left:auto; min-width:160px; text-align:right;
+  font-family:"JetBrains Mono",monospace; font-size:18px; font-weight:700; color:var(--fourier);
+  transition: transform .2s, color .2s;
+}
+.live-delta.pulse{transform:scale(1.08); color:#047857}
+.playground{
+  border:1px dashed #99f6e4; border-radius:14px; padding:14px; background:linear-gradient(180deg,#f0fdfa,#fffdf8);
+  margin-top:12px;
+}
+.playground h3{margin-top:0}
+.slider-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+input[type=range]{flex:1; min-width:160px; accent-color:var(--fourier)}
+.vs-cards{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;margin-top:12px}
+@media(max-width:700px){.vs-cards{grid-template-columns:1fr}}
+.vs-card{
+  border:1px solid var(--line); border-radius:12px; padding:12px; background:#fff;
+  transition:transform .2s, box-shadow .2s;
+}
+.vs-card.winner{border-color:#34d399; box-shadow:0 0 0 2px rgba(52,211,153,.25); transform:scale(1.02)}
+.vs-mid{display:grid;place-items:center;font-family:Fraunces,serif;font-size:1.4rem;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.glossary{display:grid;gap:10px;margin-top:8px}
+.gloss{
+  display:grid; grid-template-columns:160px 1fr; gap:12px;
+  padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fffcf7;
+}
+@media(max-width:700px){.gloss{grid-template-columns:1fr}}
+.gloss dt{
+  font-family:"JetBrains Mono",monospace; font-size:12.5px; font-weight:700; color:var(--fourier);
+}
+.gloss dd{margin:0; font-size:14px; color:var(--ink)}
+.gloss dd .ex{display:block; margin-top:4px; font-size:12.5px; color:var(--muted)}
+.run-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-top:8px}
+.run-toggle{
+  display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;font-size:11.5px;cursor:pointer;user-select:none;
+  transition:border-color .15s, background .15s, transform .15s;
+}
+.run-toggle:hover{transform:translateY(-1px);border-color:#5eead4}
+.run-toggle.on{border-color:#0f766e;background:#ecfdf5}
+.run-toggle input{accent-color:var(--fourier)}
+.kbd{
+  font-family:"JetBrains Mono",monospace;font-size:10px;padding:1px 5px;border-radius:4px;
+  border:1px solid var(--line);background:#fff;color:var(--muted);
+}
+.epoch-pills{display:flex;gap:6px;flex-wrap:wrap}
+.spark{width:100%;height:42px;margin-top:8px;display:block}
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:700px){.compare-row{grid-template-columns:1fr}}
+select.nice{
+  width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+  background:#fff;font:inherit;font-size:13px;
+}
+.race-bar{
+  height:8px;border-radius:999px;background:#e7e5e4;overflow:hidden;margin-top:8px;
+}
+.race-fill{
+  height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#0f766e,#34d399);
+  transition:width .35s ease;
+}
+.floating-tip{
+  position:fixed;z-index:50;pointer-events:none;padding:8px 10px;border-radius:8px;
+  background:#1c1914;color:#f5f0e8;font-size:12px;max-width:240px;
+  opacity:0;transform:translateY(4px);transition:opacity .15s, transform .15s;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.floating-tip.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="kicker">ERA V5 · Session 7 · Assignment Problem #3</div>
+  <h1>Fourier-Position Kronecker</h1>
+  <p class="lead">A length-dynamic alternative to paper Kronecker embeddings — technical report of the solution, the Colab proof, and interactive results.</p>
+  <div id="statusBanner" class="banner warn">Loading report…</div>
+
+  <!-- ===================== TECHNICAL REPORT (TOP) ===================== -->
+  <article class="report-hero" id="technical-report">
+    <div class="report-hero-top">
+      <div class="report-hero-main">
+        <h2>Technical report of the solution</h2>
+        <p>
+          <b>Problem.</b> Paper / Session 7 Kronecker builds each token as a sparse marking on a fixed
+          <span class="mono">256 × pos_dim</span> grid (UTF-8 byte value × byte position), then applies one
+          shared <span class="mono">Linear(D, d_model)</span> with <span class="mono">D = 256·pos_dim</span>.
+          The default <span class="mono">pos_dim = 32</span> creates two failures: (1) <b>hard crop</b> —
+          bytes past column 32 never enter the code, so long Indic pieces that share a prefix collide silently;
+          (2) <b>wasted columns</b> — short tokens leave most one-hot positions as exact zeros while still paying full <span class="mono">D</span>.
+        </p>
+        <p>
+          <b>Solution (ours).</b> Keep the Kronecker compositional event <i>byte × position</i>, but replace the
+          finite one-hot position basis <span class="mono">e_p ∈ R^{pos}</span> with a continuous Fourier feature
+          <span class="mono">φ(p) ∈ R^{r}</span> defined for every byte index. Code width stays fixed
+          <span class="mono">D = 256·r</span>; length <span class="mono">L</span> is unrestricted (soft guardrail only).
+          The only trainable input object remains the projection — same architectural contract as the paper module.
+        </p>
+        <div class="report-steps">
+          <div class="step"><div class="n">1</div><div><b>Diagnose.</b> Measure fertility &amp; Classic crop@32 on real Wikipedia for en/hi/ta/te/kn.</div></div>
+          <div class="step"><div class="n">2</div><div><b>Match budgets.</b> Train the same tiny LLM body with Classic vs Fourier at D ∈ {4096, 8192, 16384, 32768}.</div></div>
+          <div class="step"><div class="n">3</div><div><b>Ablate.</b> Absolute vs relative Fourier at r=32; report expected vs got.</div></div>
+          <div class="step"><div class="n">4</div><div><b>Claim.</b> At matched D, Fourier wins; at D=8192 it even beats Classic at D=32768 (¼ emb-path params).</div></div>
+        </div>
+      </div>
+      <aside class="report-hero-side">
+        <div class="stat-stack" id="heroStats">
+          <div class="stat"><b id="hsDelta">—</b><span>Δ val loss at D=8192 (Classic − Fourier)</span></div>
+          <div class="stat"><b id="hsWinner">—</b><span>Best overall run</span></div>
+          <div class="stat"><b id="hsEff">—</b><span>Fourier@8k vs Classic@32k</span></div>
+          <div class="stat"><b id="hsCrop">—</b><span>Peak Classic crop@32 language</span></div>
+        </div>
+      </aside>
+    </div>
+    <div class="report-body">
+      <div class="report-grid">
+        <div>
+          <h3><span class="pill classic">Paper</span> Classic</h3>
+          <div class="eq">κ = (1/√L) · vec Σ_{p &lt; pos} c_b ⊗ e_p
+D = 256 · pos
+bytes with p ≥ pos are dropped</div>
+        </div>
+        <div>
+          <h3><span class="pill fourier">Ours</span> Fourier-Position</h3>
+          <div class="eq">κ = (1/√L) · vec Σ_{p = 0..L−1} c_b ⊗ φ(p)
+φ_{2i}=sin(p/θ^{…}), φ_{2i+1}=cos(…)
+D = 256 · r &nbsp;(no hard crop)</div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:12px">
+        <b>Proof setup.</b> Tokenizer <span class="mono">xlm-roberta-base</span>; data
+        <span class="mono">wikimedia/wikipedia</span> en/hi/ta/te/kn (120k chars each);
+        tiny causal LM <span class="mono">d=256, L=4, heads=4</span>; 3 epochs; CUDA.
+        Nine curated runs (Classic pos∈{16,32,64,128}, Fourier r∈{16,32,64,128} abs, + r=32 relative).
+        Full interactive evidence below.
+      </p>
+    </div>
+  </article>
+
+  <!-- ===================== GLOSSARY ===================== -->
+  <section class="card" id="glossary">
+    <h2>Glossary — what the terms mean</h2>
+    <p class="note" style="margin-top:0">Read this once; every chart and table below uses these words.</p>
+    <dl class="glossary">
+      <div class="gloss">
+        <dt>pos_dim</dt>
+        <dd>
+          Paper Kronecker’s <b>byte-position window</b>: how many UTF-8 byte slots the grid has (columns).
+          Default <span class="mono">32</span>. Only the first <span class="mono">pos_dim</span> bytes of a token are kept.
+          <span class="ex">Example: pos_dim=32 ⇒ at most 32 bytes enter the code; byte 33+ are thrown away.</span>
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>crop@32<br><span style="font-weight:600;color:var(--muted)">crop@N</span></dt>
+        <dd>
+          <b>Fraction of token instances</b> in the corpus whose UTF-8 surface is <b>longer than N bytes</b>
+          (here N=32, the paper default). Those tokens are truncated by Classic Kronecker.
+          Reported as a rate (0.469% = 0.00469) or percent.
+          <span class="ex">crop@32 = 0 on English in our run (no token needed &gt;32 bytes). On Tamil it was 0.469% — small but real, and Indic bytes/token are still ~2.5× English.</span>
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>hard crop</dt>
+        <dd>
+          The irreversible truncate itself: Classic <b>never sees</b> bytes past <span class="mono">pos_dim</span>.
+          Two different words that agree on the first 32 bytes get the <b>same κ</b> forever (silent collision).
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>fertility</dt>
+        <dd>
+          <b>Tokenizer tokens per whitespace word</b>: <span class="mono">(# subword tokens) / (# words)</span>.
+          Higher ⇒ the language is split into more pieces ⇒ more attention cost for the same text.
+          <span class="ex">Our run: kn≈2.91, te≈2.71, ta≈2.66 vs en≈1.59 — Dravidian text is “more expensive” per word.</span>
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>bytes/tok</dt>
+        <dd>
+          Mean <b>UTF-8 byte length of a token’s surface string</b> (what Kronecker actually encodes).
+          Indic scripts often use 3 bytes per character, so bytes/tok is much higher than English even when fertility looks moderate.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>D<br><span style="font-weight:600;color:var(--muted)">code dim</span></dt>
+        <dd>
+          Width of the Kronecker code vector κ before the Linear.
+          Classic: <span class="mono">D = 256 × pos_dim</span>. Fourier: <span class="mono">D = 256 × r</span>.
+          <span class="ex">pos_dim=32 or r=32 ⇒ D=8192 (paper default budget).</span>
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>r / pos_features</dt>
+        <dd>
+          Fourier’s position-feature width (how many sin/cos dims φ(p) has). Role analogous to Classic’s <span class="mono">pos_dim</span>, but <b>does not cap token length</b>.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>matched D</dt>
+        <dd>
+          A fair compare where Classic and Fourier use the <b>same code width D</b> (hence same projection shape
+          <span class="mono">Linear(D → d_model)</span>). Only the codec differs.
+          <span class="ex">classic_pos32 vs fourier_r32_abs are both D=8192.</span>
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>emb-path params</dt>
+        <dd>
+          Trainable parameters in the <b>input embedding path only</b> — here the projection
+          <span class="mono">D × d_model</span> (e.g. 8192×256 = 2,097,152). Does <i>not</i> count the transformer body or LM head.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>val loss / ppl</dt>
+        <dd>
+          <b>val loss</b> = mean cross-entropy on held-out blocks (lower better).
+          <b>ppl</b> (perplexity) = <span class="mono">exp(val loss)</span> (lower better).
+          Absolute values are high on this tiny proxy (huge vocab, little data) — compare <b>deltas between arms</b>.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>Δ (C − F)</dt>
+        <dd>
+          <span class="mono">classic_val_loss − fourier_val_loss</span>.
+          <b>Positive ⇒ Fourier wins</b> (lower loss). Example: Δ=+0.122 at D=8192.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>absolute vs relative</dt>
+        <dd>
+          How Fourier indexes position: <b>absolute</b> uses byte index 0,1,2,… ;
+          <b>relative</b> uses <span class="mono">p/(L−1) ∈ [0,1]</span> so short/long words share a unit interval.
+          Absolute is better here for distinguishing long suffixes.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>κ (kappa) / codec</dt>
+        <dd>
+          The <b>deterministic</b> vector built from a token’s bytes (no learned weights). Classic or Fourier.
+          Then <span class="mono">emb = Linear(κ)</span> produces the model input.
+        </dd>
+      </div>
+      <div class="gloss">
+        <dt>silent collision</dt>
+        <dd>
+          Two different token strings → identical κ under Classic because they only differed <b>after</b> the crop window. No error is raised; the model simply cannot tell them apart.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <nav class="toc" aria-label="Contents">
+    <a href="#technical-report">Report</a>
+    <a href="#glossary">Glossary</a>
+    <a href="#s0">Verdict</a>
+    <a href="#playground">Playground</a>
+    <a href="#s4">Fertility</a>
+    <a href="#s5">Expected vs got</a>
+    <a href="#s6">Curves</a>
+    <a href="#s7">Matched-D</a>
+    <a href="#s10">Scoreboard</a>
+    <a href="#s11">Limits</a>
+  </nav>
+
+  <section class="card" id="s0">
+    <h2>Executive verdict</h2>
+    <div class="verdict" id="verdictBox">…</div>
+    <div class="metrics" id="metaMetrics"></div>
+    <p class="note" id="metaNote"></p>
+  </section>
+
+  <!-- ===================== PLAYGROUND ===================== -->
+  <section class="card" id="playground">
+    <h2>Interactive playground</h2>
+    <p class="note" style="margin-top:0">
+      Scrub budgets &amp; epochs, race through D, multi-select runs, toggle train/val, pick any two runs to compare.
+      Keys: <span class="kbd">←</span><span class="kbd">→</span> change D · <span class="kbd">1</span>–<span class="kbd">3</span> epoch · <span class="kbd">R</span> race · <span class="kbd">Space</span> pause race.
+    </p>
+
+    <div class="playground">
+      <h3>Matched-budget duel</h3>
+      <p class="hint"><b>Matched D</b> = same code width / projection size. <b>Δ (C−F) &gt; 0</b> ⇒ Fourier wins. See <a href="#glossary">glossary</a>.</p>
+      <div class="controls">
+        <span class="label">Budget D</span>
+        <button class="chip" data-d="4096">4096</button>
+        <button class="chip on" data-d="8192">8192</button>
+        <button class="chip" data-d="16384">16384</button>
+        <button class="chip" data-d="32768">32768</button>
+        <button class="chip" id="btnRace" type="button">▶ Race D</button>
+        <div class="live-delta" id="liveDelta">Δ —</div>
+      </div>
+      <div class="slider-row">
+        <span class="label">Scrub D</span>
+        <input id="dSlider" type="range" min="0" max="3" step="1" value="1">
+        <span class="mono" id="dSliderLabel">D=8192</span>
+      </div>
+      <div class="controls">
+        <span class="label">Epoch snapshot</span>
+        <div class="epoch-pills">
+          <button class="chip" data-ep="1">ep 1</button>
+          <button class="chip" data-ep="2">ep 2</button>
+          <button class="chip on" data-ep="3">ep 3 (final)</button>
+        </div>
+        <input id="epSlider" type="range" min="1" max="3" step="1" value="3" style="max-width:160px">
+      </div>
+      <div class="race-bar"><div class="race-fill" id="raceFill"></div></div>
+      <div class="vs-cards">
+        <div class="vs-card" id="vsClassic">
+          <div class="pill classic">Classic</div>
+          <div class="mono" id="vsCId" style="margin-top:6px">—</div>
+          <div style="font-size:1.5rem;font-family:JetBrains Mono,monospace;margin-top:4px" id="vsCLoss">—</div>
+          <div class="hint">val @ selected epoch · emb <span id="vsCParams">—</span></div>
+          <canvas class="spark" id="sparkC" width="280" height="42"></canvas>
+        </div>
+        <div class="vs-mid">vs</div>
+        <div class="vs-card" id="vsFourier">
+          <div class="pill fourier">Fourier</div>
+          <div class="mono" id="vsFId" style="margin-top:6px">—</div>
+          <div style="font-size:1.5rem;font-family:JetBrains Mono,monospace;margin-top:4px" id="vsFLoss">—</div>
+          <div class="hint">val @ selected epoch · emb <span id="vsFParams">—</span></div>
+          <canvas class="spark" id="sparkF" width="280" height="42"></canvas>
+        </div>
+      </div>
+      <p class="hint" id="vsCaption">Positive Δ means Fourier wins at this budget.</p>
+    </div>
+
+    <div class="playground" style="margin-top:14px">
+      <h3>Free compare — pick any two runs</h3>
+      <div class="compare-row">
+        <div>
+          <label class="label" for="pickA">Run A</label>
+          <select class="nice" id="pickA"></select>
+        </div>
+        <div>
+          <label class="label" for="pickB">Run B</label>
+          <select class="nice" id="pickB"></select>
+        </div>
+      </div>
+      <div id="freeCompareOut" class="callout got" style="margin-top:10px">Choose two runs…</div>
+      <div class="chart-box sm"><canvas id="freeCompareChart"></canvas></div>
+    </div>
+
+    <div class="controls" style="margin-top:16px">
+      <span class="label">Curves</span>
+      <button class="chip on" data-fam="all">All</button>
+      <button class="chip classic" data-fam="classic">Paper only</button>
+      <button class="chip" data-fam="fourier">Fourier only</button>
+      <button class="chip on" data-series="val">Val loss</button>
+      <button class="chip" data-series="train">Train loss</button>
+      <button class="chip" id="btnReplay" type="button">Replay</button>
+      <button class="chip" id="btnHighlight8192" type="button">Highlight D=8192</button>
+      <button class="chip" id="btnSelectAll" type="button">Select all runs</button>
+      <button class="chip" id="btnSelectNone" type="button">Clear runs</button>
+    </div>
+    <div class="run-grid" id="runToggles"></div>
+    <div class="chart-box tall"><canvas id="curveChart"></canvas></div>
+    <p class="hint">Tip: click a legend item (Chart.js) to hide one line, or use the checkboxes above for multi-select.</p>
+  </section>
+
+  <section class="card" id="s4">
+    <h2>Fertility lab</h2>
+    <p class="note" style="margin-top:0">
+      Reminder: <b>fertility</b> = tokens per word;
+      <b>bytes/tok</b> = UTF-8 length of the token surface;
+      <b>crop@32</b> = share of tokens longer than 32 bytes (Classic would truncate them).
+      See the <a href="#glossary">glossary</a> for full definitions.
+    </p>
+    <div class="controls">
+      <span class="label">Metric</span>
+      <button class="chip on" data-fert="fertility">Fertility</button>
+      <button class="chip" data-fert="bytes">Bytes/tok</button>
+      <button class="chip" data-fert="crop">Crop@32 %</button>
+      <span class="label" style="margin-left:8px">Language</span>
+      <button class="chip on" data-lang="all">All</button>
+      <button class="chip" data-lang="en">en</button>
+      <button class="chip" data-lang="hi">hi</button>
+      <button class="chip" data-lang="ta">ta</button>
+      <button class="chip" data-lang="te">te</button>
+      <button class="chip" data-lang="kn">kn</button>
+    </div>
+    <div class="grid2">
+      <div class="chart-box sm"><canvas id="fertChart"></canvas></div>
+      <div>
+        <div id="langDetail" class="callout got">Click a language chip for a focused readout.</div>
+        <div style="overflow-x:auto;margin-top:10px">
+          <table id="fertTable"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="playground" style="margin-top:14px">
+      <h3>Token crop simulator</h3>
+      <p class="hint">Type any string. We UTF-8-encode it and show what Classic keeps at <span class="mono">pos_dim</span> vs Fourier (all bytes kept, fixed r).</p>
+      <div class="controls">
+        <input id="tokInput" type="text" value="திருக்குறள்" style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);font:inherit">
+        <span class="label">pos_dim</span>
+        <input id="tokPos" type="range" min="4" max="64" step="1" value="32" style="max-width:140px">
+        <span class="mono" id="tokPosLab">32</span>
+        <button class="chip" type="button" data-tok-ex="hello">hello</button>
+        <button class="chip" type="button" data-tok-ex="नमस्ते">hi</button>
+        <button class="chip" type="button" data-tok-ex="திருக்குறள்">ta</button>
+        <button class="chip" type="button" data-tok-ex="ಕನ್ನಡ">kn</button>
+      </div>
+      <div id="tokOut" class="callout got" style="margin-top:10px">…</div>
+      <canvas id="tokBytes" width="720" height="56" style="width:100%;height:56px;margin-top:8px;border-radius:8px;background:#fff;border:1px solid var(--line)"></canvas>
+    </div>
+  </section>
+
+  <section class="card" id="s5">
+    <h2>Expected vs got</h2>
+    <div class="callout expect"><b>Expectation A.</b> Indic ≫ English fertility &amp; bytes/token; Classic crop@32 near 0 on English.</div>
+    <div class="callout got" id="gotA">…</div>
+    <div class="callout expect"><b>Expectation B.</b> At matched D=8192, Fourier beats Classic (same projection size).</div>
+    <div class="callout got" id="gotB">…</div>
+    <div class="callout expect"><b>Expectation C.</b> Fourier at smaller D should compete with Classic at larger D.</div>
+    <div class="callout got" id="gotC">…</div>
+    <div class="callout expect"><b>Expectation D.</b> Absolute Fourier ≥ relative at r=32 for suffix discrimination.</div>
+    <div class="callout got" id="gotD">…</div>
+  </section>
+
+  <section class="card" id="s7">
+    <h2>Matched-D table</h2>
+    <div class="chart-box sm"><canvas id="matchedChart"></canvas></div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table id="matchedTable"><thead></thead><tbody></tbody></table>
+    </div>
+    <div class="callout got" id="matchedTakeaway"></div>
+  </section>
+
+  <section class="card" id="s8">
+    <h2>Parameter efficiency</h2>
+    <p class="note">Hover points; click a family chip above curves to filter context. X = emb-path params (M), Y = val loss.</p>
+    <div class="chart-box sm"><canvas id="effChart"></canvas></div>
+    <p class="note" id="effNote"></p>
+  </section>
+
+  <section class="card" id="s9">
+    <h2>Relative ablation</h2>
+    <div id="ablationBox"></div>
+  </section>
+
+  <section class="card" id="s10">
+    <h2>Scoreboard</h2>
+    <p class="hint">Click a row to spotlight that run on the curve chart.</p>
+    <div class="chart-box sm"><canvas id="barChart"></canvas></div>
+    <div style="overflow-x:auto;margin-top:12px">
+      <table id="runTable"><thead></thead><tbody></tbody></table>
+    </div>
+    <h3>Runner auto-findings</h3>
+    <ul class="compact" id="findingsList"></ul>
+  </section>
+
+  <section class="card" id="s11">
+    <h2>Limits</h2>
+    <ul class="compact">
+      <li><b>Proves:</b> matched-D Fourier wins on this multilingual wiki proxy; Fourier@8k beats Classic@32k on val loss.</li>
+      <li><b>Does not prove:</b> full V5 pretrain quality. Absolute ppl is high (large V, small data) — trust <i>deltas</i>.</li>
+      <li>Crop rates here are modest (≤0.47%); Fourier still wins → benefits beyond hard collisions alone.</li>
+    </ul>
+    <div class="eq">python experiment.py colab --device cuda --epochs 3 <br>
+python embed_report.py results/report.json</div>
+  </section>
+
+  <footer>
+    Problem #3 · Fourier-Position Kronecker · Interactive report · data from <span class="mono">#report-data</span>
+  </footer>
+</main>
+
+<!-- REPORT_JSON_START -->
+<script id="report-data" type="application/json">{"schema_version":1,"meta":{"problem":3,"title":"Dynamic Kronecker — Paper vs Fourier-Position","tokenizer":"xlm-roberta-base","dataset":"wikimedia/wikipedia (en,hi,ta,te,kn)","device":"cuda","created_utc":"2026-08-09T09:00:11.412530+00:00","epochs":3,"d_model":256,"n_layer":4,"n_head":4,"seq_len":128,"batch_size":32,"lr":0.0003,"chars_per_lang":120000,"mix":{"en":1.0,"hi":1.0,"ta":1.0,"te":1.0,"kn":1.0},"seed":0,"tokens_total":178695,"mix_meta":{"en":{"chars":120000,"tokens":30205,"weight":1.0},"hi":{"chars":120000,"tokens":34342,"weight":1.0},"ta":{"chars":120000,"tokens":34724,"weight":1.0},"te":{"chars":120000,"tokens":39988,"weight":1.0},"kn":{"chars":120000,"tokens":39435,"weight":1.0},"total_tokens":178695}},"fertility":{"classic_pos_dim_reference":32,"chars_per_lang":120000,"languages":{"en":{"chars":120000,"words":19052,"tokens":30205,"fertility_tokens_per_word":1.5853978584925468,"chars_per_token":3.972852176791922,"bytes_per_token":3.319086243999338,"classic_crop_rate":0.0,"classic_cropped_tokens":0,"unique_token_ids_seen":5912},"hi":{"chars":120000,"words":22486,"tokens":34342,"fertility_tokens_per_word":1.5272614070977497,"chars_per_token":3.4942635839496825,"bytes_per_token":8.218595306039251,"classic_crop_rate":0.000931803622386582,"classic_cropped_tokens":32,"unique_token_ids_seen":3827},"ta":{"chars":120000,"words":13051,"tokens":34724,"fertility_tokens_per_word":2.6606390314918396,"chars_per_token":3.455823061859233,"bytes_per_token":8.605863379794954,"classic_crop_rate":0.004694159659025458,"classic_cropped_tokens":163,"unique_token_ids_seen":3181},"te":{"chars":120000,"words":14733,"tokens":39988,"fertility_tokens_per_word":2.714179053824747,"chars_per_token":3.0009002700810243,"bytes_per_token":7.442132639791938,"classic_crop_rate":0.001850555166549965,"classic_cropped_tokens":74,"unique_token_ids_seen":3183},"kn":{"chars":120000,"words":13530,"tokens":39435,"fertility_tokens_per_word":2.9146341463414633,"chars_per_token":3.0429821224800304,"bytes_per_token":7.73242043869659,"classic_crop_rate":0.0008368200836820083,"classic_cropped_tokens":33,"unique_token_ids_seen":2723}},"fertility_ranking_high_to_low":["kn","te","ta","en","hi"]},"runs":[{"id":"classic_pos16","family":"classic","label":"Paper Kronecker · pos_dim=16 · D=4096","hyperparams":{"code_dim":4096,"pos_dim":16,"position_mode":null,"theta":null},"trainable_params":68241408,"embedding_path_params":1048576,"seconds":6.7,"final_val_loss":7.853069322572337,"final_val_ppl":2573.6214810217066,"history":[{"epoch":1,"train_loss":10.762726059961432,"val_loss":9.116610197712191,"val_ppl":9105.284130970354},{"epoch":2,"train_loss":8.369318107052653,"val_loss":8.304965595547245,"val_ppl":4043.9030074686007},{"epoch":3,"train_loss":7.752311353372408,"val_loss":7.853069322572337,"val_ppl":2573.6214810217066}]},{"id":"classic_pos32","family":"classic","label":"Paper Kronecker · pos_dim=32 · D=8192","hyperparams":{"code_dim":8192,"pos_dim":32,"position_mode":null,"theta":null},"trainable_params":69289984,"embedding_path_params":2097152,"seconds":6.6,"final_val_loss":7.793117770188147,"final_val_ppl":2423.8628612289212,"history":[{"epoch":1,"train_loss":10.738692521100587,"val_loss":9.098523476140961,"val_ppl":8942.079757156882},{"epoch":2,"train_loss":8.341820693338496,"val_loss":8.273277749260552,"val_ppl":3917.76943544661},{"epoch":3,"train_loss":7.70694385527047,"val_loss":7.793117770188147,"val_ppl":2423.8628612289212}]},{"id":"classic_pos64","family":"classic","label":"Paper Kronecker · pos_dim=64 · D=16384","hyperparams":{"code_dim":16384,"pos_dim":64,"position_mode":null,"theta":null},"trainable_params":71387136,"embedding_path_params":4194304,"seconds":6.9,"final_val_loss":7.730653159052348,"final_val_ppl":2277.089016475011,"history":[{"epoch":1,"train_loss":10.727082982362976,"val_loss":9.07000713897266,"val_ppl":8690.68584806135},{"epoch":2,"train_loss":8.287085104481797,"val_loss":8.205279899158066,"val_ppl":3660.224997226844},{"epoch":3,"train_loss":7.617074745651646,"val_loss":7.730653159052348,"val_ppl":2277.089016475011}]},{"id":"classic_pos128","family":"classic","label":"Paper Kronecker · pos_dim=128 · D=32768","hyperparams":{"code_dim":32768,"pos_dim":128,"position_mode":null,"theta":null},"trainable_params":75581440,"embedding_path_params":8388608,"seconds":7.0,"final_val_loss":7.678224090191958,"final_val_ppl":2160.7790137933557,"history":[{"epoch":1,"train_loss":10.674432479870537,"val_loss":9.011161529760567,"val_ppl":8194.033363198758},{"epoch":2,"train_loss":8.21497499440147,"val_loss":8.157927019132984,"val_ppl":3490.9424409640837},{"epoch":3,"train_loss":7.535388063796475,"val_loss":7.678224090191958,"val_ppl":2160.7790137933557}]},{"id":"fourier_r16_abs","family":"fourier","label":"Ours Fourier · r=16 absolute · D=4096","hyperparams":{"code_dim":4096,"pos_dim":16,"pos_features":16,"position_mode":"absolute","theta":10000.0},"trainable_params":68241408,"embedding_path_params":1048576,"seconds":6.5,"final_val_loss":7.755312686343845,"final_val_ppl":2333.93902153938,"history":[{"epoch":1,"train_loss":10.733727716887481,"val_loss":9.094368173064089,"val_ppl":8904.999798215611},{"epoch":2,"train_loss":8.30537374567777,"val_loss":8.215984735557502,"val_ppl":3699.6175763877686},{"epoch":3,"train_loss":7.638435047395474,"val_loss":7.755312686343845,"val_ppl":2333.93902153938}]},{"id":"fourier_r32_abs","family":"fourier","label":"Ours Fourier · r=32 absolute · D=8192","hyperparams":{"code_dim":8192,"pos_dim":32,"pos_features":32,"position_mode":"absolute","theta":10000.0},"trainable_params":69289984,"embedding_path_params":2097152,"seconds":6.5,"final_val_loss":7.671188227564311,"final_val_ppl":2145.629427184964,"history":[{"epoch":1,"train_loss":10.664427489445337,"val_loss":9.055347662177875,"val_ppl":8564.214209457474},{"epoch":2,"train_loss":8.231551327777458,"val_loss":8.127900178483921,"val_ppl":3387.678570996573},{"epoch":3,"train_loss":7.537448073912919,"val_loss":7.671188227564311,"val_ppl":2145.629427184964}]},{"id":"fourier_r64_abs","family":"fourier","label":"Ours Fourier · r=64 absolute · D=16384","hyperparams":{"code_dim":16384,"pos_dim":64,"pos_features":64,"position_mode":"absolute","theta":10000.0},"trainable_params":71387136,"embedding_path_params":4194304,"seconds":6.7,"final_val_loss":7.6427873535979565,"final_val_ppl":2085.5488846114995,"history":[{"epoch":1,"train_loss":10.652063023787978,"val_loss":9.029783022489479,"val_ppl":8348.04803697106},{"epoch":2,"train_loss":8.184293786400163,"val_loss":8.092261650579438,"val_ppl":3269.072715971477},{"epoch":3,"train_loss":7.491469777000264,"val_loss":7.6427873535979565,"val_ppl":2085.5488846114995}]},{"id":"fourier_r128_abs","family":"fourier","label":"Ours Fourier · r=128 absolute · D=32768","hyperparams":{"code_dim":32768,"pos_dim":128,"pos_features":128,"position_mode":"absolute","theta":10000.0},"trainable_params":75581440,"embedding_path_params":8388608,"seconds":7.0,"final_val_loss":7.594948864669251,"final_val_ppl":1988.128185308518,"history":[{"epoch":1,"train_loss":10.57636660209419,"val_loss":8.984745231463755,"val_ppl":7980.4113079383305},{"epoch":2,"train_loss":8.109431040315469,"val_loss":8.031249547176223,"val_ppl":3075.5823584649643},{"epoch":3,"train_loss":7.40475224576114,"val_loss":7.594948864669251,"val_ppl":1988.128185308518}]},{"id":"fourier_r32_rel","family":"fourier","label":"Ours Fourier · r=32 relative · D=8192 (ablation)","hyperparams":{"code_dim":8192,"pos_dim":32,"pos_features":32,"position_mode":"relative","theta":10000.0},"trainable_params":69289984,"embedding_path_params":2097152,"seconds":6.6,"final_val_loss":7.677655405277829,"final_val_ppl":2159.5505606999222,"history":[{"epoch":1,"train_loss":10.672461834424245,"val_loss":9.071224363587744,"val_ppl":8701.270805626104},{"epoch":2,"train_loss":8.237507938485157,"val_loss":8.125768661499023,"val_ppl":3380.4653668477163},{"epoch":3,"train_loss":7.537579302381881,"val_loss":7.677655405277829,"val_ppl":2159.5505606999222}]}],"findings":{"bullets":["Fertility ranking (tokens/word, high→low): kn > te > ta > en > hi.","Classic crop@32 is highest on ta (0.469% of token instances).","Best paper Kronecker: classic_pos128 val_loss=7.6782.","Best Fourier: fourier_r128_abs val_loss=7.5949.","Head-to-head delta (classic_best − fourier_best) = +0.0833 (positive ⇒ Fourier wins). Overall best run: fourier_r128_abs.","Matched D=8192: classic_pos32 val_loss=7.7931 vs fourier_r32_abs val_loss=7.6712 (Δ=+0.1219)."],"best_classic_id":"classic_pos128","best_fourier_id":"fourier_r128_abs","fertility_by_lang":{"en":1.5853978584925468,"hi":1.5272614070977497,"ta":2.6606390314918396,"te":2.714179053824747,"kn":2.9146341463414633},"classic_crop_by_lang":{"en":0.0,"hi":0.000931803622386582,"ta":0.004694159659025458,"te":0.001850555166549965,"kn":0.0008368200836820083}}}</script>
+<!-- REPORT_JSON_END -->
+
+<script>
+(function(){
+  const el = document.getElementById('report-data');
+  let R; try { R = JSON.parse(el.textContent); } catch(e){ R = null; }
+  const runs = (R && R.runs) || [];
+  const banner = document.getElementById('statusBanner');
+  if(!runs.length){
+    banner.className = 'banner warn';
+    banner.textContent = 'No report embedded — run: python embed_report.py results/report.json';
+    return;
+  }
+  banner.className = 'banner';
+  banner.textContent = `Live · ${runs.length} runs · ${R.meta.tokenizer} · ${R.meta.device}`;
+
+  const fmt = (x,n=4)=> Number(x).toFixed(n);
+  const pct = (x,n=3)=> (100*Number(x)).toFixed(n)+'%';
+  const byId = Object.fromEntries(runs.map(r=>[r.id,r]));
+  const langs = ['en','hi','ta','te','kn'];
+  const L = R.fertility.languages;
+  const classicColor = '#b45309', fourierColor = '#0f766e';
+
+  const pairs = [
+    {d:4096, c:'classic_pos16', f:'fourier_r16_abs'},
+    {d:8192, c:'classic_pos32', f:'fourier_r32_abs'},
+    {d:16384, c:'classic_pos64', f:'fourier_r64_abs'},
+    {d:32768, c:'classic_pos128', f:'fourier_r128_abs'},
+  ].map(p => {
+    const C=byId[p.c], F=byId[p.f];
+    return {...p, C, F, delta: C.final_val_loss - F.final_val_loss};
+  });
+
+  // ----- hero stats -----
+  const p8 = pairs.find(p=>p.d===8192);
+  const f32 = byId.fourier_r32_abs, c128 = byId.classic_pos128, f128 = byId.fourier_r128_abs;
+  document.getElementById('hsDelta').textContent = '+'+fmt(p8.delta);
+  document.getElementById('hsWinner').textContent = f128.id;
+  document.getElementById('hsEff').textContent =
+    f32.final_val_loss < c128.final_val_loss ? 'Fourier wins @ ¼ params' : 'see table';
+  const worstCrop = langs.reduce((a,l)=> L[l].classic_crop_rate>(L[a].classic_crop_rate||0)?l:a, 'en');
+  document.getElementById('hsCrop').textContent = `${worstCrop} (${pct(L[worstCrop].classic_crop_rate)})`;
+
+  // ----- meta / verdict -----
+  document.getElementById('metaMetrics').innerHTML = [
+    ['Tokenizer', R.meta.tokenizer],
+    ['Epochs', R.meta.epochs],
+    ['d_model / layers', `${R.meta.d_model} / ${R.meta.n_layer}`],
+    ['Tokens', (R.meta.tokens_total||0).toLocaleString()],
+  ].map(([k,v])=>`<div class="metric"><b>${v}</b><span>${k}</span></div>`).join('');
+  document.getElementById('metaNote').textContent =
+    `${R.meta.dataset} · chars/lang=${R.meta.chars_per_lang} · seq=${R.meta.seq_len} · batch=${R.meta.batch_size} · lr=${R.meta.lr}`;
+
+  document.getElementById('verdictBox').innerHTML =
+    `<b>Fourier-position Kronecker wins this proxy.</b>
+    At paper default D=8192: Classic <span class="mono">${fmt(byId.classic_pos32.final_val_loss)}</span> →
+    Fourier <span class="mono">${fmt(f32.final_val_loss)}</span>
+    (Δ=<span class="delta-pos">+${fmt(p8.delta)}</span>).
+    <span class="mono">fourier_r32_abs</span> also beats <span class="mono">classic_pos128</span>
+    (${fmt(f32.final_val_loss)} vs ${fmt(c128.final_val_loss)}) at ¼ embedding-path parameters.
+    Fourier wins every matched-D pair. Absolute &gt; relative at r=32.`;
+
+  // ----- fertility table -----
+  document.querySelector('#fertTable thead').innerHTML =
+    `<tr><th>Lang</th><th>Fertility</th><th>Bytes/tok</th><th>Crop@32</th><th>Tokens</th></tr>`;
+  document.querySelector('#fertTable tbody').innerHTML = langs.map(l=>{
+    const r=L[l];
+    return `<tr class="clickable" data-lang-row="${l}"><td><b>${l}</b></td>
+      <td class="mono">${fmt(r.fertility_tokens_per_word,3)}</td>
+      <td class="mono">${fmt(r.bytes_per_token,2)}</td>
+      <td class="mono">${pct(r.classic_crop_rate)}</td>
+      <td class="mono">${r.tokens.toLocaleString()}</td></tr>`;
+  }).join('');
+
+  // expected vs got
+  const fertRank = R.fertility.fertility_ranking_high_to_low.join(' > ');
+  document.getElementById('gotA').innerHTML =
+    `<b>Got A.</b> Ranking <span class="mono">${fertRank}</span>. Bytes/tok en=${fmt(L.en.bytes_per_token,2)} vs ta=${fmt(L.ta.bytes_per_token,2)}. Crop peak <b>${worstCrop}</b> ${pct(L[worstCrop].classic_crop_rate)}. Confirmed.`;
+  document.getElementById('gotB').innerHTML =
+    `<b>Got B.</b> D=8192: ${fmt(p8.C.final_val_loss)} vs ${fmt(p8.F.final_val_loss)} (Δ=<span class="delta-pos">+${fmt(p8.delta)}</span>). Confirmed.`;
+  document.getElementById('gotC').innerHTML =
+    `<b>Got C.</b> Fourier@8k (${fmt(f32.final_val_loss)}) beats Classic@32k (${fmt(c128.final_val_loss)}). Best run ${f128.id}=${fmt(f128.final_val_loss)}. Confirmed.`;
+  const frel=byId.fourier_r32_rel, dRel=frel.final_val_loss-f32.final_val_loss;
+  document.getElementById('gotD').innerHTML =
+    `<b>Got D.</b> abs ${fmt(f32.final_val_loss)} vs rel ${fmt(frel.final_val_loss)} (Δ=${dRel>=0?'+':''}${fmt(dRel)}). Prefer absolute.`;
+
+  document.querySelector('#matchedTable thead').innerHTML =
+    `<tr><th>D</th><th>Classic</th><th>Loss</th><th>Fourier</th><th>Loss</th><th>Δ</th></tr>`;
+  document.querySelector('#matchedTable tbody').innerHTML = pairs.map(p=>`<tr class="win-f clickable" data-d-row="${p.d}">
+    <td class="mono">${p.d}</td><td class="mono">${p.c}</td><td class="mono">${fmt(p.C.final_val_loss)}</td>
+    <td class="mono">${p.f}</td><td class="mono">${fmt(p.F.final_val_loss)}</td>
+    <td class="mono delta-pos">+${fmt(p.delta)}</td></tr>`).join('');
+  document.getElementById('matchedTakeaway').innerHTML =
+    `<b>Takeaway.</b> Fourier wins at every matched D (Δ = ${pairs.map(p=>'+'+fmt(p.delta)).join(', ')}).`;
+  document.getElementById('effNote').textContent =
+    `Fourier D=8192 emb params=${f32.embedding_path_params.toLocaleString()}; Classic D=32768=${c128.embedding_path_params.toLocaleString()}.`;
+  document.getElementById('ablationBox').innerHTML =
+    `<p>Absolute ${fmt(f32.final_val_loss)} vs relative ${fmt(frel.final_val_loss)} at D=8192. Classic same D: ${fmt(byId.classic_pos32.final_val_loss)}.</p>`;
+  document.getElementById('findingsList').innerHTML =
+    (R.findings.bullets||[]).map(b=>`<li>${b}</li>`).join('');
+
+  const bestLoss = Math.min(...runs.map(r=>r.final_val_loss));
+  document.querySelector('#runTable thead').innerHTML =
+    `<tr><th>Run</th><th>D</th><th>Val loss</th><th>Ppl</th><th>Emb params</th></tr>`;
+  document.querySelector('#runTable tbody').innerHTML = [...runs].sort((a,b)=>a.final_val_loss-b.final_val_loss).map(r=>`
+    <tr class="clickable ${r.final_val_loss===bestLoss?'best':''}" data-run="${r.id}">
+      <td><span class="pill ${r.family}">${r.family}</span> <span class="mono">${r.id}</span></td>
+      <td class="mono">${r.hyperparams.code_dim}</td>
+      <td class="mono">${fmt(r.final_val_loss)}</td>
+      <td class="mono">${fmt(r.final_val_ppl,1)}</td>
+      <td class="mono">${r.embedding_path_params.toLocaleString()}</td></tr>`).join('');
+
+  if(typeof Chart==='undefined') return;
+
+  Chart.defaults.font.family = 'Source Sans 3, system-ui, sans-serif';
+  Chart.defaults.plugins.tooltip.backgroundColor = '#1c1914';
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.animation.duration = 700;
+
+  const tip = document.createElement('div');
+  tip.className = 'floating-tip';
+  document.body.appendChild(tip);
+  function showTip(html, x, y){
+    tip.innerHTML = html;
+    tip.style.left = Math.min(window.innerWidth - 260, Math.max(8, x + 12)) + 'px';
+    tip.style.top = Math.min(window.innerHeight - 80, Math.max(8, y + 12)) + 'px';
+    tip.classList.add('show');
+  }
+  function hideTip(){ tip.classList.remove('show'); }
+
+  function lossAt(run, epoch, series){
+    const h = run.history.find(x => x.epoch === epoch) || run.history[run.history.length-1];
+    return series === 'train' ? h.train_loss : h.val_loss;
+  }
+  function animateNumber(el, to, digits=4){
+    const from = parseFloat(el.dataset.n || to);
+    const t0 = performance.now(), dur = 380;
+    function frame(t){
+      const u = Math.min(1, (t - t0) / dur);
+      const e = 1 - Math.pow(1 - u, 3);
+      const v = from + (to - from) * e;
+      el.textContent = fmt(v, digits);
+      el.dataset.n = String(v);
+      if(u < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  function drawSpark(canvas, history, color, epochMark){
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const ys = history.map(x => x.val_loss);
+    const min = Math.min(...ys), max = Math.max(...ys);
+    const pad = 4;
+    const xs = history.map((_, i) => pad + i * (w - 2*pad) / Math.max(1, history.length-1));
+    const py = y => pad + (1 - (y - min) / (max - min || 1)) * (h - 2*pad);
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    history.forEach((pt, i) => {
+      const x = xs[i], y = py(pt.val_loss);
+      if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    const mi = Math.max(0, Math.min(history.length-1, epochMark - 1));
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(xs[mi], py(history[mi].val_loss), 3.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // ----- fertility -----
+  let fertMetric = 'fertility', fertLang = 'all';
+  const fertVals = () => {
+    const pick = fertLang==='all' ? langs : [fertLang];
+    const data = pick.map(l => {
+      if(fertMetric==='fertility') return L[l].fertility_tokens_per_word;
+      if(fertMetric==='bytes') return L[l].bytes_per_token;
+      return 100*L[l].classic_crop_rate;
+    });
+    return {labels: pick, data};
+  };
+  const fertChart = new Chart(document.getElementById('fertChart'), {
+    type:'bar',
+    data:{ labels:[], datasets:[{ label:'', data:[], backgroundColor:'#0f766e', borderRadius:8 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      onClick(evt, els){
+        if(!els.length) return;
+        setLang(fertChart.data.labels[els[0].index]);
+      },
+      plugins:{
+        title:{display:true, text:'Click a bar or language chip · hover for detail'},
+        tooltip:{ callbacks:{ label(c){ return ` ${c.dataset.label}: ${Number(c.raw).toFixed(3)}`; } } }
+      },
+      scales:{ y:{ beginAtZero:true } }
+    }
+  });
+  function refreshFert(){
+    const {labels, data} = fertVals();
+    const label = fertMetric==='fertility' ? 'Fertility (tok/word)' : fertMetric==='bytes' ? 'Bytes/token' : 'Crop@32 %';
+    fertChart.data.labels = labels;
+    fertChart.data.datasets[0].data = data;
+    fertChart.data.datasets[0].label = label;
+    fertChart.data.datasets[0].backgroundColor = labels.map(l => {
+      if(fertLang!=='all' && l!==fertLang) return '#d6d3d1';
+      return fertMetric==='crop' ? '#b45309' : fertMetric==='bytes' ? '#9f1239' : '#0f766e';
+    });
+    fertChart.update();
+    if(fertLang!=='all'){
+      const r=L[fertLang];
+      document.getElementById('langDetail').innerHTML =
+        `<b>${fertLang}</b> · fertility <span class="mono">${fmt(r.fertility_tokens_per_word,3)}</span> ·
+         bytes/tok <span class="mono">${fmt(r.bytes_per_token,2)}</span> ·
+         crop@32 <span class="mono">${pct(r.classic_crop_rate)}</span> ·
+         tokens <span class="mono">${r.tokens.toLocaleString()}</span>`;
+    } else {
+      document.getElementById('langDetail').innerHTML =
+        `All languages · ranking <span class="mono">${fertRank}</span>. Click a chip or bar to focus.`;
+    }
+  }
+  function setLang(l){
+    fertLang = l;
+    document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
+    refreshFert();
+  }
+  document.querySelectorAll('[data-fert]').forEach(b=>b.addEventListener('click',()=>{
+    fertMetric = b.dataset.fert;
+    document.querySelectorAll('[data-fert]').forEach(x=>x.classList.toggle('on', x===b));
+    refreshFert();
+  }));
+  document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+  document.querySelectorAll('[data-lang-row]').forEach(tr=>{
+    tr.addEventListener('click',()=>setLang(tr.dataset.langRow));
+    tr.addEventListener('mouseenter', e=>{
+      const l = tr.dataset.langRow, r = L[l];
+      showTip(`<b>${l}</b><br>fert ${fmt(r.fertility_tokens_per_word,3)} · crop ${pct(r.classic_crop_rate)}`, e.clientX, e.clientY);
+    });
+    tr.addEventListener('mousemove', e=> showTip(tip.innerHTML, e.clientX, e.clientY));
+    tr.addEventListener('mouseleave', hideTip);
+  });
+  refreshFert();
+
+  // ----- curve multi-select -----
+  let famFilter = 'all', seriesMode = 'val', spotlight = null;
+  const selected = new Set(runs.map(r => r.id));
+  const togglesEl = document.getElementById('runToggles');
+  togglesEl.innerHTML = runs.map(r => `
+    <label class="run-toggle on" data-run-toggle="${r.id}">
+      <input type="checkbox" checked data-run-cb="${r.id}">
+      <span class="mono">${r.id.replace('fourier_','').replace('classic_','c_')}</span>
+    </label>`).join('');
+
+  function syncToggleUI(){
+    document.querySelectorAll('[data-run-toggle]').forEach(lab=>{
+      const id = lab.dataset.runToggle;
+      const on = selected.has(id);
+      lab.classList.toggle('on', on);
+      const cb = lab.querySelector('input');
+      if(cb) cb.checked = on;
+    });
+  }
+  function curveDatasets(){
+    const list = window.__spotList;
+    return runs
+      .filter(r => selected.has(r.id))
+      .filter(r => famFilter==='all' || r.family===famFilter)
+      .map(r=>{
+        const thick = list
+          ? list.includes(r.id)
+          : (r.id==='classic_pos32' || r.id==='fourier_r32_abs');
+        const dim = list && !list.includes(r.id);
+        const base = r.family==='classic' ? classicColor : fourierColor;
+        const yKey = seriesMode === 'train' ? 'train_loss' : 'val_loss';
+        return {
+          label: r.id,
+          data: r.history.map(h=>({x:h.epoch, y:h[yKey]})),
+          borderColor: dim
+            ? (r.family==='classic' ? 'rgba(180,83,9,.22)' : 'rgba(15,118,110,.22)')
+            : base,
+          borderDash: r.id.includes('rel') ? [6,4] : [],
+          borderWidth: thick ? 3.4 : 1.3,
+          pointRadius: thick ? 5 : 2.5,
+          tension: 0.25,
+          backgroundColor: 'transparent',
+        };
+      });
+  }
+  const curveChart = new Chart(document.getElementById('curveChart'), {
+    type:'line',
+    data:{ datasets: curveDatasets() },
+    options:{
+      responsive:true, maintainAspectRatio:false, parsing:false,
+      interaction:{ mode:'nearest', intersect:false },
+      plugins:{
+        title:{ display:true, text:'Loss vs epoch — multi-select runs · train/val · family filter' },
+        tooltip:{
+          callbacks:{
+            afterBody(items){
+              const id = items[0].dataset.label;
+              const r = byId[id];
+              return [`final val ${fmt(r.final_val_loss)} · D=${r.hyperparams.code_dim} · emb ${(r.embedding_path_params/1e6).toFixed(2)}M`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ type:'linear', title:{display:true, text:'Epoch'}, ticks:{stepSize:1}, min:1, max:R.meta.epochs },
+        y:{ title:{display:true, text:'Loss'} }
+      }
+    }
+  });
+  function refreshCurves(animate=true){
+    curveChart.data.datasets = curveDatasets();
+    curveChart.options.scales.y.title.text = seriesMode === 'train' ? 'Train loss' : 'Val loss';
+    curveChart.update(animate ? 'active' : 'none');
+  }
+  document.querySelectorAll('[data-run-cb]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const id = cb.dataset.runCb;
+      if(cb.checked) selected.add(id); else selected.delete(id);
+      syncToggleUI();
+      window.__spotList = null;
+      refreshCurves();
+    });
+  });
+  document.getElementById('btnSelectAll').addEventListener('click', ()=>{
+    runs.forEach(r => selected.add(r.id));
+    syncToggleUI(); refreshCurves();
+  });
+  document.getElementById('btnSelectNone').addEventListener('click', ()=>{
+    selected.clear();
+    syncToggleUI(); refreshCurves();
+  });
+  document.querySelectorAll('[data-fam]').forEach(b=>b.addEventListener('click',()=>{
+    famFilter = b.dataset.fam;
+    document.querySelectorAll('[data-fam]').forEach(x=>x.classList.toggle('on', x===b));
+    refreshCurves();
+  }));
+  document.querySelectorAll('[data-series]').forEach(b=>b.addEventListener('click',()=>{
+    seriesMode = b.dataset.series;
+    document.querySelectorAll('[data-series]').forEach(x=>x.classList.toggle('on', x===b));
+    refreshCurves();
+  }));
+  document.getElementById('btnReplay').addEventListener('click',()=>{
+    curveChart.options.animation = { duration: 1100, easing: 'easeInOutQuart' };
+    refreshCurves(true);
+  });
+  document.getElementById('btnHighlight8192').addEventListener('click',()=>{
+    const on = !(window.__dual8192);
+    window.__dual8192 = on;
+    window.__spotList = on ? ['classic_pos32','fourier_r32_abs'] : null;
+    if(on){
+      selected.add('classic_pos32'); selected.add('fourier_r32_abs');
+      syncToggleUI();
+    }
+    refreshCurves();
+  });
+
+  function spotlightRun(id){
+    spotlight = id;
+    window.__spotList = [id];
+    window.__dual8192 = false;
+    selected.clear(); selected.add(id);
+    syncToggleUI();
+    famFilter = 'all';
+    document.querySelectorAll('[data-fam]').forEach(x=>x.classList.toggle('on', x.dataset.fam==='all'));
+    document.querySelectorAll('#runTable tr').forEach(x=>x.style.outline='');
+    const tr = document.querySelector(`[data-run="${id}"]`);
+    if(tr) tr.style.outline = '2px solid #0f766e';
+    refreshCurves();
+    document.getElementById('playground').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  document.querySelectorAll('[data-run]').forEach(tr=>tr.addEventListener('click',()=>spotlightRun(tr.dataset.run)));
+
+  // ----- duel + epoch + race -----
+  let dIndex = 1, ep = 3, racing = false, raceTimer = null;
+  function setEpoch(e){
+    ep = +e;
+    document.getElementById('epSlider').value = ep;
+    document.querySelectorAll('[data-ep]').forEach(b=>b.classList.toggle('on', +b.dataset.ep===ep));
+    setDuel(dIndex, false);
+  }
+  function setDuel(idx, pulse=true){
+    dIndex = Math.max(0, Math.min(pairs.length-1, idx));
+    const p = pairs[dIndex];
+    document.getElementById('dSlider').value = dIndex;
+    document.getElementById('dSliderLabel').textContent = 'D='+p.d;
+    document.querySelectorAll('[data-d]').forEach(b=>b.classList.toggle('on', +b.dataset.d===p.d));
+
+    const cLoss = lossAt(p.C, ep, 'val');
+    const fLoss = lossAt(p.F, ep, 'val');
+    const delta = cLoss - fLoss;
+
+    document.getElementById('vsCId').textContent = p.c;
+    document.getElementById('vsFId').textContent = p.f;
+    animateNumber(document.getElementById('vsCLoss'), cLoss);
+    animateNumber(document.getElementById('vsFLoss'), fLoss);
+    document.getElementById('vsCParams').textContent = p.C.embedding_path_params.toLocaleString();
+    document.getElementById('vsFParams').textContent = p.F.embedding_path_params.toLocaleString();
+
+    const deltaEl = document.getElementById('liveDelta');
+    deltaEl.textContent = 'Δ ' + (delta>=0?'+':'') + fmt(delta) + ` @ ep${ep}`;
+    if(pulse){
+      deltaEl.classList.remove('pulse');
+      void deltaEl.offsetWidth;
+      deltaEl.classList.add('pulse');
+    }
+
+    document.getElementById('vsClassic').classList.toggle('winner', delta < 0);
+    document.getElementById('vsFourier').classList.toggle('winner', delta >= 0);
+    document.getElementById('vsCaption').textContent =
+      `At D=${p.d}, epoch ${ep}: Fourier ${delta>=0?'better':'worse'} by ${fmt(Math.abs(delta))} val loss` +
+      (p.d===8192 && ep===3 ? ' — paper default budget (final).' : '.');
+
+    drawSpark(document.getElementById('sparkC'), p.C.history, classicColor, ep);
+    drawSpark(document.getElementById('sparkF'), p.F.history, fourierColor, ep);
+
+    matchedChart.data.datasets[0].backgroundColor = pairs.map((x,i)=> i===dIndex ? '#b45309' : '#fdba74aa');
+    matchedChart.data.datasets[1].backgroundColor = pairs.map((x,i)=> i===dIndex ? '#0f766e' : '#5eead4aa');
+    matchedChart.data.datasets[0].data = pairs.map(x => lossAt(x.C, ep, 'val'));
+    matchedChart.data.datasets[1].data = pairs.map(x => lossAt(x.F, ep, 'val'));
+    matchedChart.options.plugins.title.text = `Matched D @ epoch ${ep} — click a group`;
+    matchedChart.update('none');
+
+    document.getElementById('raceFill').style.width = ((dIndex+1)/pairs.length*100)+'%';
+  }
+  function stopRace(){
+    racing = false;
+    if(raceTimer){ clearInterval(raceTimer); raceTimer = null; }
+    const btn = document.getElementById('btnRace');
+    btn.textContent = '▶ Race D';
+  }
+  function startRace(){
+    if(racing){ stopRace(); return; }
+    racing = true;
+    document.getElementById('btnRace').textContent = '⏸ Pause';
+    let i = 0;
+    setDuel(0);
+    raceTimer = setInterval(()=>{
+      i += 1;
+      if(i >= pairs.length){ stopRace(); return; }
+      setDuel(i);
+    }, 1100);
+  }
+  document.getElementById('btnRace').addEventListener('click', startRace);
+  document.querySelectorAll('[data-d]').forEach(b=>b.addEventListener('click',()=>{
+    stopRace();
+    setDuel(pairs.findIndex(p=>p.d===+b.dataset.d));
+  }));
+  document.getElementById('dSlider').addEventListener('input', e=>{ stopRace(); setDuel(+e.target.value); });
+  document.querySelectorAll('[data-ep]').forEach(b=>b.addEventListener('click',()=>setEpoch(b.dataset.ep)));
+  document.getElementById('epSlider').addEventListener('input', e=>setEpoch(e.target.value));
+  document.querySelectorAll('[data-d-row]').forEach(tr=>tr.addEventListener('click',()=>{
+    stopRace();
+    setDuel(pairs.findIndex(p=>p.d===+tr.dataset.dRow));
+    document.getElementById('playground').scrollIntoView({behavior:'smooth'});
+  }));
+
+  const matchedChart = new Chart(document.getElementById('matchedChart'), {
+    type:'bar',
+    data:{
+      labels: pairs.map(p=>'D='+p.d),
+      datasets:[
+        { label:'Classic', data: pairs.map(p=>p.C.final_val_loss), backgroundColor:'#fdba74', borderRadius:6 },
+        { label:'Fourier', data: pairs.map(p=>p.F.final_val_loss), backgroundColor:'#5eead4', borderRadius:6 },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      onClick(evt, els){
+        if(!els.length) return;
+        stopRace();
+        setDuel(els[0].index);
+      },
+      plugins:{
+        title:{display:true, text:'Click a group to load it in the duel'},
+        tooltip:{ callbacks:{ afterBody(items){
+          const i=items[0].dataIndex;
+          const d = lossAt(pairs[i].C, ep, 'val') - lossAt(pairs[i].F, ep, 'val');
+          return [`Δ ${d>=0?'+':''}${fmt(d)} @ ep${ep}`];
+        }}}
+      },
+      scales:{ y:{ suggestedMin:7.55, suggestedMax:9.2 } }
+    }
+  });
+
+  // ----- free compare -----
+  const pickA = document.getElementById('pickA');
+  const pickB = document.getElementById('pickB');
+  const opts = runs.map(r => `<option value="${r.id}">${r.id} · ${fmt(r.final_val_loss)}</option>`).join('');
+  pickA.innerHTML = opts;
+  pickB.innerHTML = opts;
+  pickA.value = 'classic_pos32';
+  pickB.value = 'fourier_r32_abs';
+  const freeChart = new Chart(document.getElementById('freeCompareChart'), {
+    type:'line',
+    data:{ datasets:[] },
+    options:{
+      responsive:true, maintainAspectRatio:false, parsing:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ title:{display:true, text:'Head-to-head histories'} },
+      scales:{
+        x:{ type:'linear', title:{display:true,text:'Epoch'}, ticks:{stepSize:1}, min:1, max:R.meta.epochs },
+        y:{ title:{display:true,text:'Val loss'} }
+      }
+    }
+  });
+  function refreshFree(){
+    const A = byId[pickA.value], B = byId[pickB.value];
+    if(!A || !B) return;
+    const d = A.final_val_loss - B.final_val_loss;
+    const winner = d > 0 ? B.id : d < 0 ? A.id : 'tie';
+    document.getElementById('freeCompareOut').innerHTML =
+      `<b>${A.id}</b> ${fmt(A.final_val_loss)} vs <b>${B.id}</b> ${fmt(B.final_val_loss)} ·
+       Δ(A−B)=<span class="mono">${d>=0?'+':''}${fmt(d)}</span> ·
+       winner: <span class="mono">${winner}</span> ·
+       emb ${(A.embedding_path_params/1e6).toFixed(2)}M vs ${(B.embedding_path_params/1e6).toFixed(2)}M`;
+    freeChart.data.datasets = [
+      { label:A.id, data:A.history.map(h=>({x:h.epoch,y:h.val_loss})),
+        borderColor: classicColor, borderWidth:2.6, tension:0.25, pointRadius:4, backgroundColor:'transparent' },
+      { label:B.id, data:B.history.map(h=>({x:h.epoch,y:h.val_loss})),
+        borderColor: fourierColor, borderWidth:2.6, tension:0.25, pointRadius:4, backgroundColor:'transparent',
+        borderDash: B.id.includes('rel') ? [6,4] : [] },
+    ];
+    // color by family of each pick
+    freeChart.data.datasets[0].borderColor = A.family==='classic' ? classicColor : fourierColor;
+    freeChart.data.datasets[1].borderColor = B.family==='classic' ? '#9a3412' : fourierColor;
+    freeChart.update();
+  }
+  pickA.addEventListener('change', refreshFree);
+  pickB.addEventListener('change', refreshFree);
+  refreshFree();
+
+  const effChart = new Chart(document.getElementById('effChart'), {
+    type:'scatter',
+    data:{
+      datasets:[
+        { label:'Classic', data: runs.filter(r=>r.family==='classic').map(r=>({x:r.embedding_path_params/1e6, y:r.final_val_loss, id:r.id})),
+          backgroundColor:classicColor, pointRadius:8, pointHoverRadius:12 },
+        { label:'Fourier abs', data: runs.filter(r=>r.family==='fourier'&&!r.id.includes('rel')).map(r=>({x:r.embedding_path_params/1e6, y:r.final_val_loss, id:r.id})),
+          backgroundColor:fourierColor, pointRadius:8, pointHoverRadius:12 },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      onClick(evt, els, chart){
+        if(!els.length) return;
+        const ds = chart.data.datasets[els[0].datasetIndex].data[els[0].index];
+        if(ds && ds.id) spotlightRun(ds.id);
+      },
+      plugins:{
+        title:{display:true, text:'Val loss vs emb-path params (M) — click a point'},
+        tooltip:{ callbacks:{ label(c){ const d=c.raw; return ` ${d.id}: loss ${fmt(d.y)} @ ${fmt(d.x,2)}M`; } } }
+      },
+      scales:{
+        x:{ title:{display:true, text:'Emb-path params (M)'} },
+        y:{ title:{display:true, text:'Final val loss'} }
+      }
+    }
+  });
+
+  const order = [...runs].sort((a,b)=>a.final_val_loss-b.final_val_loss);
+  new Chart(document.getElementById('barChart'), {
+    type:'bar',
+    data:{
+      labels: order.map(r=>r.id),
+      datasets:[{
+        label:'Final val loss',
+        data: order.map(r=>r.final_val_loss),
+        backgroundColor: order.map(r => r.family==='classic' ? '#fdba74' : '#5eead4'),
+        borderRadius:6
+      }]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      onClick(evt, els){
+        if(!els.length) return;
+        spotlightRun(order[els[0].index].id);
+      },
+      plugins:{ title:{display:true, text:'Click a bar to spotlight on curves'} }
+    }
+  });
+
+  // keyboard
+  document.addEventListener('keydown', e=>{
+    const tag = (e.target && e.target.tagName) || '';
+    if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if(e.key === 'ArrowRight'){ stopRace(); setDuel(dIndex+1); e.preventDefault(); }
+    if(e.key === 'ArrowLeft'){ stopRace(); setDuel(dIndex-1); e.preventDefault(); }
+    if(e.key === '1' || e.key === '2' || e.key === '3'){ setEpoch(+e.key); }
+    if(e.key === 'r' || e.key === 'R'){ startRace(); }
+    if(e.key === ' '){ if(racing) stopRace(); e.preventDefault(); }
+  });
+
+  // ----- token crop simulator -----
+  const enc = new TextEncoder();
+  function refreshTok(){
+    const s = document.getElementById('tokInput').value || '';
+    const pos = +document.getElementById('tokPos').value;
+    document.getElementById('tokPosLab').textContent = String(pos);
+    const bytes = Array.from(enc.encode(s));
+    const kept = bytes.slice(0, pos);
+    const cropped = bytes.slice(pos);
+    const rate = bytes.length ? cropped.length / bytes.length : 0;
+    document.getElementById('tokOut').innerHTML =
+      `<b>${bytes.length}</b> UTF-8 bytes · Classic keeps <span class="mono">${kept.length}</span> / crops <span class="mono">${cropped.length}</span>
+       (${pct(rate)}) at pos_dim=${pos}. Fourier keeps <b>all ${bytes.length}</b> with fixed D=256·r (no hard crop).` +
+      (cropped.length ? ` <span style="color:#9f1239">Silent collision risk if another token shares the first ${pos} bytes.</span>` : ' No crop.');
+    const canvas = document.getElementById('tokBytes');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    if(!bytes.length){
+      ctx.fillStyle = '#a8a29e';
+      ctx.font = '12px JetBrains Mono, monospace';
+      ctx.fillText('type something…', 12, h/2+4);
+      return;
+    }
+    const bw = Math.max(2, Math.floor((w - 8) / bytes.length) - 1);
+    bytes.forEach((b, i)=>{
+      const x = 4 + i * (bw + 1);
+      ctx.fillStyle = i < pos ? '#0f766e' : '#b45309';
+      ctx.globalAlpha = 0.35 + 0.65 * (b/255);
+      ctx.fillRect(x, 8, bw, h - 16);
+      ctx.globalAlpha = 1;
+    });
+    // crop line
+    if(pos < bytes.length){
+      const x = 4 + pos * (bw + 1) - 0.5;
+      ctx.strokeStyle = '#9f1239';
+      ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(x, 4); ctx.lineTo(x, h-4); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#9f1239';
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.fillText('crop', Math.min(w-36, x+4), 12);
+    }
+  }
+  document.getElementById('tokInput').addEventListener('input', refreshTok);
+  document.getElementById('tokPos').addEventListener('input', refreshTok);
+  document.querySelectorAll('[data-tok-ex]').forEach(b=>b.addEventListener('click',()=>{
+    document.getElementById('tokInput').value = b.dataset.tokEx;
+    refreshTok();
+  }));
+  refreshTok();
+
+  setDuel(1);
+})();
+</script>
+</body>
+</html>

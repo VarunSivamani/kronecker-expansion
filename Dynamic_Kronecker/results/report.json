@@ -1,0 +1,481 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "problem": 3,
+    "title": "Dynamic Kronecker — Paper vs Fourier-Position",
+    "tokenizer": "xlm-roberta-base",
+    "dataset": "wikimedia/wikipedia (en,hi,ta,te,kn)",
+    "device": "cuda",
+    "created_utc": "2026-08-09T09:00:11.412530+00:00",
+    "epochs": 3,
+    "d_model": 256,
+    "n_layer": 4,
+    "n_head": 4,
+    "seq_len": 128,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "chars_per_lang": 120000,
+    "mix": {
+      "en": 1.0,
+      "hi": 1.0,
+      "ta": 1.0,
+      "te": 1.0,
+      "kn": 1.0
+    },
+    "seed": 0,
+    "tokens_total": 178695,
+    "mix_meta": {
+      "en": {
+        "chars": 120000,
+        "tokens": 30205,
+        "weight": 1.0
+      },
+      "hi": {
+        "chars": 120000,
+        "tokens": 34342,
+        "weight": 1.0
+      },
+      "ta": {
+        "chars": 120000,
+        "tokens": 34724,
+        "weight": 1.0
+      },
+      "te": {
+        "chars": 120000,
+        "tokens": 39988,
+        "weight": 1.0
+      },
+      "kn": {
+        "chars": 120000,
+        "tokens": 39435,
+        "weight": 1.0
+      },
+      "total_tokens": 178695
+    }
+  },
+  "fertility": {
+    "classic_pos_dim_reference": 32,
+    "chars_per_lang": 120000,
+    "languages": {
+      "en": {
+        "chars": 120000,
+        "words": 19052,
+        "tokens": 30205,
+        "fertility_tokens_per_word": 1.5853978584925468,
+        "chars_per_token": 3.972852176791922,
+        "bytes_per_token": 3.319086243999338,
+        "classic_crop_rate": 0.0,
+        "classic_cropped_tokens": 0,
+        "unique_token_ids_seen": 5912
+      },
+      "hi": {
+        "chars": 120000,
+        "words": 22486,
+        "tokens": 34342,
+        "fertility_tokens_per_word": 1.5272614070977497,
+        "chars_per_token": 3.4942635839496825,
+        "bytes_per_token": 8.218595306039251,
+        "classic_crop_rate": 0.000931803622386582,
+        "classic_cropped_tokens": 32,
+        "unique_token_ids_seen": 3827
+      },
+      "ta": {
+        "chars": 120000,
+        "words": 13051,
+        "tokens": 34724,
+        "fertility_tokens_per_word": 2.6606390314918396,
+        "chars_per_token": 3.455823061859233,
+        "bytes_per_token": 8.605863379794954,
+        "classic_crop_rate": 0.004694159659025458,
+        "classic_cropped_tokens": 163,
+        "unique_token_ids_seen": 3181
+      },
+      "te": {
+        "chars": 120000,
+        "words": 14733,
+        "tokens": 39988,
+        "fertility_tokens_per_word": 2.714179053824747,
+        "chars_per_token": 3.0009002700810243,
+        "bytes_per_token": 7.442132639791938,
+        "classic_crop_rate": 0.001850555166549965,
+        "classic_cropped_tokens": 74,
+        "unique_token_ids_seen": 3183
+      },
+      "kn": {
+        "chars": 120000,
+        "words": 13530,
+        "tokens": 39435,
+        "fertility_tokens_per_word": 2.9146341463414633,
+        "chars_per_token": 3.0429821224800304,
+        "bytes_per_token": 7.73242043869659,
+        "classic_crop_rate": 0.0008368200836820083,
+        "classic_cropped_tokens": 33,
+        "unique_token_ids_seen": 2723
+      }
+    },
+    "fertility_ranking_high_to_low": [
+      "kn",
+      "te",
+      "ta",
+      "en",
+      "hi"
+    ]
+  },
+  "runs": [
+    {
+      "id": "classic_pos16",
+      "family": "classic",
+      "label": "Paper Kronecker · pos_dim=16 · D=4096",
+      "hyperparams": {
+        "code_dim": 4096,
+        "pos_dim": 16,
+        "position_mode": null,
+        "theta": null
+      },
+      "trainable_params": 68241408,
+      "embedding_path_params": 1048576,
+      "seconds": 6.7,
+      "final_val_loss": 7.853069322572337,
+      "final_val_ppl": 2573.6214810217066,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.762726059961432,
+          "val_loss": 9.116610197712191,
+          "val_ppl": 9105.284130970354
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.369318107052653,
+          "val_loss": 8.304965595547245,
+          "val_ppl": 4043.9030074686007
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.752311353372408,
+          "val_loss": 7.853069322572337,
+          "val_ppl": 2573.6214810217066
+        }
+      ]
+    },
+    {
+      "id": "classic_pos32",
+      "family": "classic",
+      "label": "Paper Kronecker · pos_dim=32 · D=8192",
+      "hyperparams": {
+        "code_dim": 8192,
+        "pos_dim": 32,
+        "position_mode": null,
+        "theta": null
+      },
+      "trainable_params": 69289984,
+      "embedding_path_params": 2097152,
+      "seconds": 6.6,
+      "final_val_loss": 7.793117770188147,
+      "final_val_ppl": 2423.8628612289212,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.738692521100587,
+          "val_loss": 9.098523476140961,
+          "val_ppl": 8942.079757156882
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.341820693338496,
+          "val_loss": 8.273277749260552,
+          "val_ppl": 3917.76943544661
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.70694385527047,
+          "val_loss": 7.793117770188147,
+          "val_ppl": 2423.8628612289212
+        }
+      ]
+    },
+    {
+      "id": "classic_pos64",
+      "family": "classic",
+      "label": "Paper Kronecker · pos_dim=64 · D=16384",
+      "hyperparams": {
+        "code_dim": 16384,
+        "pos_dim": 64,
+        "position_mode": null,
+        "theta": null
+      },
+      "trainable_params": 71387136,
+      "embedding_path_params": 4194304,
+      "seconds": 6.9,
+      "final_val_loss": 7.730653159052348,
+      "final_val_ppl": 2277.089016475011,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.727082982362976,
+          "val_loss": 9.07000713897266,
+          "val_ppl": 8690.68584806135
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.287085104481797,
+          "val_loss": 8.205279899158066,
+          "val_ppl": 3660.224997226844
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.617074745651646,
+          "val_loss": 7.730653159052348,
+          "val_ppl": 2277.089016475011
+        }
+      ]
+    },
+    {
+      "id": "classic_pos128",
+      "family": "classic",
+      "label": "Paper Kronecker · pos_dim=128 · D=32768",
+      "hyperparams": {
+        "code_dim": 32768,
+        "pos_dim": 128,
+        "position_mode": null,
+        "theta": null
+      },
+      "trainable_params": 75581440,
+      "embedding_path_params": 8388608,
+      "seconds": 7.0,
+      "final_val_loss": 7.678224090191958,
+      "final_val_ppl": 2160.7790137933557,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.674432479870537,
+          "val_loss": 9.011161529760567,
+          "val_ppl": 8194.033363198758
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.21497499440147,
+          "val_loss": 8.157927019132984,
+          "val_ppl": 3490.9424409640837
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.535388063796475,
+          "val_loss": 7.678224090191958,
+          "val_ppl": 2160.7790137933557
+        }
+      ]
+    },
+    {
+      "id": "fourier_r16_abs",
+      "family": "fourier",
+      "label": "Ours Fourier · r=16 absolute · D=4096",
+      "hyperparams": {
+        "code_dim": 4096,
+        "pos_dim": 16,
+        "pos_features": 16,
+        "position_mode": "absolute",
+        "theta": 10000.0
+      },
+      "trainable_params": 68241408,
+      "embedding_path_params": 1048576,
+      "seconds": 6.5,
+      "final_val_loss": 7.755312686343845,
+      "final_val_ppl": 2333.93902153938,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.733727716887481,
+          "val_loss": 9.094368173064089,
+          "val_ppl": 8904.999798215611
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.30537374567777,
+          "val_loss": 8.215984735557502,
+          "val_ppl": 3699.6175763877686
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.638435047395474,
+          "val_loss": 7.755312686343845,
+          "val_ppl": 2333.93902153938
+        }
+      ]
+    },
+    {
+      "id": "fourier_r32_abs",
+      "family": "fourier",
+      "label": "Ours Fourier · r=32 absolute · D=8192",
+      "hyperparams": {
+        "code_dim": 8192,
+        "pos_dim": 32,
+        "pos_features": 32,
+        "position_mode": "absolute",
+        "theta": 10000.0
+      },
+      "trainable_params": 69289984,
+      "embedding_path_params": 2097152,
+      "seconds": 6.5,
+      "final_val_loss": 7.671188227564311,
+      "final_val_ppl": 2145.629427184964,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.664427489445337,
+          "val_loss": 9.055347662177875,
+          "val_ppl": 8564.214209457474
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.231551327777458,
+          "val_loss": 8.127900178483921,
+          "val_ppl": 3387.678570996573
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.537448073912919,
+          "val_loss": 7.671188227564311,
+          "val_ppl": 2145.629427184964
+        }
+      ]
+    },
+    {
+      "id": "fourier_r64_abs",
+      "family": "fourier",
+      "label": "Ours Fourier · r=64 absolute · D=16384",
+      "hyperparams": {
+        "code_dim": 16384,
+        "pos_dim": 64,
+        "pos_features": 64,
+        "position_mode": "absolute",
+        "theta": 10000.0
+      },
+      "trainable_params": 71387136,
+      "embedding_path_params": 4194304,
+      "seconds": 6.7,
+      "final_val_loss": 7.6427873535979565,
+      "final_val_ppl": 2085.5488846114995,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.652063023787978,
+          "val_loss": 9.029783022489479,
+          "val_ppl": 8348.04803697106
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.184293786400163,
+          "val_loss": 8.092261650579438,
+          "val_ppl": 3269.072715971477
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.491469777000264,
+          "val_loss": 7.6427873535979565,
+          "val_ppl": 2085.5488846114995
+        }
+      ]
+    },
+    {
+      "id": "fourier_r128_abs",
+      "family": "fourier",
+      "label": "Ours Fourier · r=128 absolute · D=32768",
+      "hyperparams": {
+        "code_dim": 32768,
+        "pos_dim": 128,
+        "pos_features": 128,
+        "position_mode": "absolute",
+        "theta": 10000.0
+      },
+      "trainable_params": 75581440,
+      "embedding_path_params": 8388608,
+      "seconds": 7.0,
+      "final_val_loss": 7.594948864669251,
+      "final_val_ppl": 1988.128185308518,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.57636660209419,
+          "val_loss": 8.984745231463755,
+          "val_ppl": 7980.4113079383305
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.109431040315469,
+          "val_loss": 8.031249547176223,
+          "val_ppl": 3075.5823584649643
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.40475224576114,
+          "val_loss": 7.594948864669251,
+          "val_ppl": 1988.128185308518
+        }
+      ]
+    },
+    {
+      "id": "fourier_r32_rel",
+      "family": "fourier",
+      "label": "Ours Fourier · r=32 relative · D=8192 (ablation)",
+      "hyperparams": {
+        "code_dim": 8192,
+        "pos_dim": 32,
+        "pos_features": 32,
+        "position_mode": "relative",
+        "theta": 10000.0
+      },
+      "trainable_params": 69289984,
+      "embedding_path_params": 2097152,
+      "seconds": 6.6,
+      "final_val_loss": 7.677655405277829,
+      "final_val_ppl": 2159.5505606999222,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 10.672461834424245,
+          "val_loss": 9.071224363587744,
+          "val_ppl": 8701.270805626104
+        },
+        {
+          "epoch": 2,
+          "train_loss": 8.237507938485157,
+          "val_loss": 8.125768661499023,
+          "val_ppl": 3380.4653668477163
+        },
+        {
+          "epoch": 3,
+          "train_loss": 7.537579302381881,
+          "val_loss": 7.677655405277829,
+          "val_ppl": 2159.5505606999222
+        }
+      ]
+    }
+  ],
+  "findings": {
+    "bullets": [
+      "Fertility ranking (tokens/word, high→low): kn > te > ta > en > hi.",
+      "Classic crop@32 is highest on ta (0.469% of token instances).",
+      "Best paper Kronecker: classic_pos128 val_loss=7.6782.",
+      "Best Fourier: fourier_r128_abs val_loss=7.5949.",
+      "Head-to-head delta (classic_best − fourier_best) = +0.0833 (positive ⇒ Fourier wins). Overall best run: fourier_r128_abs.",
+      "Matched D=8192: classic_pos32 val_loss=7.7931 vs fourier_r32_abs val_loss=7.6712 (Δ=+0.1219)."
+    ],
+    "best_classic_id": "classic_pos128",
+    "best_fourier_id": "fourier_r128_abs",
+    "fertility_by_lang": {
+      "en": 1.5853978584925468,
+      "hi": 1.5272614070977497,
+      "ta": 2.6606390314918396,
+      "te": 2.714179053824747,
+      "kn": 2.9146341463414633
+    },
+    "classic_crop_by_lang": {
+      "en": 0.0,
+      "hi": 0.000931803622386582,
+      "ta": 0.004694159659025458,
+      "te": 0.001850555166549965,
+      "kn": 0.0008368200836820083
+    }
+  }
+}

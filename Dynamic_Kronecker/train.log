@@ -1,0 +1,89 @@
+================================================================
+Problem #3 · Colab run · Paper Kronecker vs Fourier
+================================================================
+config.json: 100%|████████████████████████████████████████████████████████████████████████████████| 615/615 [00:00<00:00, 2.62MB/s]
+tokenizer_config.json: 100%|████████████████████████████████████████████████████████████████████| 25.0/25.0 [00:00<00:00, 55.8kB/s]
+sentencepiece.bpe.model: 100%|████████████████████████████████████████████████████████████████| 5.07M/5.07M [00:00<00:00, 27.9MB/s]
+tokenizer.json: 100%|█████████████████████████████████████████████████████████████████████████| 9.10M/9.10M [00:00<00:00, 29.1MB/s]
+[fertility] en …
+Resolving data files: 100%|██████████████████████████████████████████████████████████████████████| 41/41 [00:00<00:00, 8226.09it/s]
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (30205 > 512). Running this sequence through the model will result in indexing errors
+  fert=1.585  bytes/tok=3.32  crop@32=0.000%
+[fertility] hi …
+  fert=1.527  bytes/tok=8.22  crop@32=0.093%
+[fertility] ta …
+  fert=2.661  bytes/tok=8.61  crop@32=0.469%
+[fertility] te …
+  fert=2.714  bytes/tok=7.44  crop@32=0.185%
+[fertility] kn …
+  fert=2.915  bytes/tok=7.73  crop@32=0.084%
+
+Building multilingual train stream …
+Resolving data files: 100%|█████████████████████████████████████████████████████████████████████| 41/41 [00:00<00:00, 14442.47it/s]
+  data[en] chars=120,000 tokens=30,205 w=1.0
+  data[hi] chars=120,000 tokens=34,342 w=1.0
+  data[ta] chars=120,000 tokens=34,724 w=1.0
+  data[te] chars=120,000 tokens=39,988 w=1.0
+  data[kn] chars=120,000 tokens=39,435 w=1.0
+Blocks: train=1257 val=139
+Decoding vocab surfaces …
+
+===== classic_pos16 =====
+ClassicKronecker: 100%|█████████████████████████████████████████████████████████████████| 250002/250002 [00:15<00:00, 16225.94it/s]
+/opt/conda/lib/python3.11/site-packages/torch/nn/modules/transformer.py:382: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+  [classic_pos16] ep 1/3  train=10.7627 val=9.1166 ppl=9105.28
+  [classic_pos16] ep 2/3  train=8.3693 val=8.3050 ppl=4043.90
+  [classic_pos16] ep 3/3  train=7.7523 val=7.8531 ppl=2573.62
+
+===== classic_pos32 =====
+ClassicKronecker: 100%|█████████████████████████████████████████████████████████████████| 250002/250002 [00:17<00:00, 14016.18it/s]
+  [classic_pos32] ep 1/3  train=10.7387 val=9.0985 ppl=8942.08
+  [classic_pos32] ep 2/3  train=8.3418 val=8.2733 ppl=3917.77
+  [classic_pos32] ep 3/3  train=7.7069 val=7.7931 ppl=2423.86
+
+===== classic_pos64 =====
+ClassicKronecker: 100%|█████████████████████████████████████████████████████████████████| 250002/250002 [00:21<00:00, 11454.11it/s]
+  [classic_pos64] ep 1/3  train=10.7271 val=9.0700 ppl=8690.69
+  [classic_pos64] ep 2/3  train=8.2871 val=8.2053 ppl=3660.22
+  [classic_pos64] ep 3/3  train=7.6171 val=7.7307 ppl=2277.09
+
+===== classic_pos128 =====
+ClassicKronecker: 100%|██████████████████████████████████████████████████████████████████| 250002/250002 [00:32<00:00, 7717.83it/s]
+  [classic_pos128] ep 1/3  train=10.6744 val=9.0112 ppl=8194.03
+  [classic_pos128] ep 2/3  train=8.2150 val=8.1579 ppl=3490.94
+  [classic_pos128] ep 3/3  train=7.5354 val=7.6782 ppl=2160.78
+
+===== fourier_r16_abs =====
+FourierKronecker: 100%|█████████████████████████████████████████████████████████████████| 250002/250002 [00:21<00:00, 11624.41it/s]
+  [fourier_r16_abs] ep 1/3  train=10.7337 val=9.0944 ppl=8905.00
+  [fourier_r16_abs] ep 2/3  train=8.3054 val=8.2160 ppl=3699.62
+  [fourier_r16_abs] ep 3/3  train=7.6384 val=7.7553 ppl=2333.94
+
+===== fourier_r32_abs =====
+FourierKronecker: 100%|█████████████████████████████████████████████████████████████████| 250002/250002 [00:24<00:00, 10276.52it/s]
+  [fourier_r32_abs] ep 1/3  train=10.6644 val=9.0553 ppl=8564.21
+  [fourier_r32_abs] ep 2/3  train=8.2316 val=8.1279 ppl=3387.68
+  [fourier_r32_abs] ep 3/3  train=7.5374 val=7.6712 ppl=2145.63
+
+===== fourier_r64_abs =====
+FourierKronecker: 100%|██████████████████████████████████████████████████████████████████| 250002/250002 [00:29<00:00, 8545.51it/s]
+  [fourier_r64_abs] ep 1/3  train=10.6521 val=9.0298 ppl=8348.05
+  [fourier_r64_abs] ep 2/3  train=8.1843 val=8.0923 ppl=3269.07
+  [fourier_r64_abs] ep 3/3  train=7.4915 val=7.6428 ppl=2085.55
+
+===== fourier_r128_abs =====
+FourierKronecker: 100%|██████████████████████████████████████████████████████████████████| 250002/250002 [00:43<00:00, 5768.57it/s]
+  [fourier_r128_abs] ep 1/3  train=10.5764 val=8.9847 ppl=7980.41
+  [fourier_r128_abs] ep 2/3  train=8.1094 val=8.0312 ppl=3075.58
+  [fourier_r128_abs] ep 3/3  train=7.4048 val=7.5949 ppl=1988.13
+
+===== fourier_r32_rel =====
+FourierKronecker: 100%|██████████████████████████████████████████████████████████████████| 250002/250002 [00:26<00:00, 9479.15it/s]
+  [fourier_r32_rel] ep 1/3  train=10.6725 val=9.0712 ppl=8701.27
+  [fourier_r32_rel] ep 2/3  train=8.2375 val=8.1258 ppl=3380.47
+  [fourier_r32_rel] ep 3/3  train=7.5376 val=7.6777 ppl=2159.55
+
+✓ Wrote /mnt/models/results/report.json
+Download this file from Colab, then locally run:
+  python embed_report.py results/report.json
